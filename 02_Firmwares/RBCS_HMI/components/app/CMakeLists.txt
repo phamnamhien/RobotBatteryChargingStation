@@ -4,9 +4,12 @@ idf_component_register(
                     INCLUDE_DIRS    "include"
                     REQUIRES        driver 
                                     esp_timer
-                                    modbus_manager
-                                    lvgl
-                                    espressif__esp_lvgl_port
-                                    ui  
                                     hsm 
+
+                                    modbus_manager
+
+                                    esp_lcd_touch_gt911
+                                    esp_lcd_touch
+                                    lvgl
+                                    ui                               
 )

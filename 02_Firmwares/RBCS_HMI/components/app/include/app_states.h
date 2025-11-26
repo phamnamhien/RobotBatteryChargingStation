@@ -19,7 +19,6 @@
 #include "esp_lcd_panel_ops.h"
 
 #include "lvgl.h"
-#include "esp_lvgl_port.h"
 #include "ui.h"
 
 #include "hsm.h"
