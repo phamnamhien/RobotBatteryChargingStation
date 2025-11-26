@@ -1,0 +1,80 @@
+dependencies:
+  esp-modbus:
+    component_hash: b3f3cb7c8212ada1ca6aa4a6ecefb27b97babbf1bca8006fd9f989f131daeb00
+    dependencies:
+    - name: idf
+      version: '>=5.0'
+    source:
+      git: https://github.com/phamnamhien/esp-modbus.git
+      path: .
+      type: git
+    version: 523e432f2ec1db2bca52650534f92141e8a8b473
+  espressif/cmake_utilities:
+    component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 0.5.3
+  espressif/esp_lcd_ili9341:
+    component_hash: 476fe49688f95201cba03a9391142d48c20b26f8e937de9ece44770a24943829
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: idf
+      require: private
+      version: '>=4.4'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.0.1
+  espressif/esp_lcd_touch:
+    component_hash: 779b4ba2464a3ae85681e4b860caa5fdc35801458c23f3039ee761bae7f442a4
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4.2'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.1.2
+  espressif/esp_lvgl_port:
+    component_hash: b43dc04720d126cbfe14d53a84787e4c24b7bd7f15468e224c930ad3ffb32258
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    - name: lvgl/lvgl
+      registry_url: https://components.espressif.com
+      require: public
+      version: ^8
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.4.0
+  idf:
+    source:
+      type: idf
+    version: 5.5.1
+  lvgl/lvgl:
+    component_hash: 948bff879a345149b83065535bbc4a026ce9f47498a22881e432a264b9098015
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 8.3.11
+direct_dependencies:
+- esp-modbus
+- espressif/esp_lcd_ili9341
+- espressif/esp_lcd_touch
+- espressif/esp_lvgl_port
+- idf
+- lvgl/lvgl
+manifest_hash: 034bd502e29c1c64d4b4b98ffe6fcfc0a397e06ce72a726e790ceca109506bc5
+target: esp32
+version: 2.0.0
