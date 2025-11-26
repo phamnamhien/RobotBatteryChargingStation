@@ -13,12 +13,25 @@ modbus_config_t modbus_cfg = {
     .baudrate = 9600,
 };
 
-// Callback nhận dữ liệu Modbus
-void modbus_data_received(uint8_t slave_addr, uint8_t reg_type, 
-                         uint16_t reg_addr, uint16_t *data, uint16_t length)
+// ============================================
+// LVGL Display Driver
+// ============================================
+
+// Dummy flush callback (thay thế bằng driver thật khi có màn hình)
+static void dummy_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
-    ESP_LOGI(TAG, "Nhận dữ liệu từ slave %d, type 0x%02X, addr %d:", 
-             slave_addr, reg_type, reg_addr);
+    // Không làm gì, chỉ báo LVGL là đã flush xong
+    lv_disp_flush_ready(disp_drv);
+}
+
+// ============================================
+// Modbus Callbacks & Tasks
+// ============================================
+
+// Callback nhận dữ liệu Modbus
+void modbus_data_received(uint8_t slave_addr, uint8_t reg_type, uint16_t reg_addr, uint16_t *data, uint16_t length)
+{
+    ESP_LOGI(TAG, "Modbus: Nhận dữ liệu từ slave %d, type 0x%02X, addr %d:", slave_addr, reg_type, reg_addr);
     for (int i = 0; i < length; i++) {
         ESP_LOGI(TAG, "  [%d] = %d", i, data[i]);
     }
@@ -30,182 +43,180 @@ void modbus_poll_task(void *arg)
     uint16_t holding_regs[10];
     uint16_t input_regs[5];
     
+    ESP_LOGI(TAG, "Modbus polling task started");
+
     while (1) {
         // Đọc Holding Registers
         if (modbus_read_holding_registers(1, 0, 10, holding_regs) == ESP_OK) {
-            ESP_LOGI(TAG, "Đọc Holding OK");
+            ESP_LOGI(TAG, "Modbus: Đọc Holding Registers OK");
         }
-        
-        vTaskDelay(pdMS_TO_TICKS(200));
-        
+        vTaskDelay(pdMS_TO_TICKS(500));
+
         // Đọc Input Registers
         if (modbus_read_input_registers(1, 0, 5, input_regs) == ESP_OK) {
-            ESP_LOGI(TAG, "Đọc Input OK");
+            ESP_LOGI(TAG, "Modbus: Đọc Input Registers OK");
         }
-        
-        vTaskDelay(pdMS_TO_TICKS(200));
-        
-        // // Ghi register
+        vTaskDelay(pdMS_TO_TICKS(500));
+
+        // Ghi register (ví dụ)
         // modbus_write_single_register(1, 0, 1234);
-        
-        // vTaskDelay(pdMS_TO_TICKS(200));
+        // vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
-void app_main(void)
+// ============================================
+// LVGL Task
+// ============================================
+
+void lvgl_task(void *arg)
 {
-    ESP_LOGI(TAG, "Khởi động ứng dụng...");
-
-
+    ESP_LOGI(TAG, "LVGL task started");
     
-    // Khởi tạo Modbus Manager
-    ESP_ERROR_CHECK(modbus_manager_init(&modbus_cfg));
-    
-    // Đăng ký callback (tùy chọn)
-    modbus_manager_register_callback(modbus_data_received);
-
-    // Tạo task Modbus polling
-    xTaskCreate(modbus_poll_task, "modbus_poll", 4096, NULL, 5, NULL);
-
-    // Khởi tạo HSM
-    app_state_hsm_init(&device);
-
-    // TODO: Khởi tạo UI, WiFi, các module khác...
-    ESP_LOGI(TAG, "Các module khác có thể khởi tạo ở đây");
+    while (1) {
+        // LVGL timer handler - xử lý animations, events, etc.
+        lv_timer_handler();
+        
+        // Delay 5ms - LVGL khuyến nghị
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
 }
 
+// ============================================
+// Main Application Entry Point
+// ============================================
 
+void app_main(void)
+{
+    ESP_LOGI(TAG, "===========================================");
+    ESP_LOGI(TAG, "  RBCS HMI - Robot Battery Charging Station");
+    ESP_LOGI(TAG, "===========================================");
 
+    // ========================================
+    // BƯỚC 1: Khởi tạo LVGL
+    // ========================================
+    ESP_LOGI(TAG, "[1/5] Initializing LVGL...");
+    lv_init();
+    ESP_LOGI(TAG, "      LVGL initialized");
 
-
-
-
-
-// #include <stdio.h>
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/task.h"
-// #include "esp_timer.h"
-// #include "esp_lcd_panel_io.h"
-// #include "esp_lcd_panel_vendor.h"
-// #include "esp_lcd_panel_ops.h"
-// #include "driver/gpio.h"
-// #include "driver/spi_master.h"
-// #include "esp_err.h"
-// #include "esp_log.h"
-// #include "lvgl.h"
-// #include "esp_lvgl_port.h"
-// #include "esp_lcd_ili9341.h" 
-
-// static const char *TAG = "main";
-
-
-// void app_main(void)
-// {
+    // ========================================
+    // BƯỚC 2: Cấp phát Display Buffer
+    // ========================================
+    ESP_LOGI(TAG, "[2/5] Allocating display buffer...");
     
-// }
-
-
-// // Cấu hình pins (thay đổi theo phần cứng của bạn)
-// #define LCD_HOST       SPI2_HOST
-// #define LCD_PIXEL_CLK  20000000
-// #define LCD_H_RES      240
-// #define LCD_V_RES      320
-
-// #define PIN_NUM_MISO   -1
-// #define PIN_NUM_MOSI   23
-// #define PIN_NUM_CLK    18
-// #define PIN_NUM_CS     5
-// #define PIN_NUM_DC     2
-// #define PIN_NUM_RST    4
-// #define PIN_NUM_BCKL   15
-
-// void app_main(void)
-// {
-//     ESP_LOGI(TAG, "Initialize SPI bus");
+    static lv_disp_draw_buf_t draw_buf;
+    static lv_color_t *buf1;
     
-//     // SPI bus init
-//     spi_bus_config_t buscfg = {
-//         .mosi_io_num = PIN_NUM_MOSI,
-//         .miso_io_num = PIN_NUM_MISO,
-//         .sclk_io_num = PIN_NUM_CLK,
-//         .quadwp_io_num = -1,
-//         .quadhd_io_num = -1,
-//         .max_transfer_sz = LCD_H_RES * LCD_V_RES * sizeof(uint16_t)
-//     };
-//     ESP_ERROR_CHECK(spi_bus_initialize(LCD_HOST, &buscfg, SPI_DMA_CH_AUTO));
-
-//     ESP_LOGI(TAG, "Install panel IO");
-//     esp_lcd_panel_io_handle_t io_handle = NULL;
-//     esp_lcd_panel_io_spi_config_t io_config = {
-//         .dc_gpio_num = PIN_NUM_DC,
-//         .cs_gpio_num = PIN_NUM_CS,
-//         .pclk_hz = LCD_PIXEL_CLK,
-//         .lcd_cmd_bits = 8,
-//         .lcd_param_bits = 8,
-//         .spi_mode = 0,
-//         .trans_queue_depth = 10,
-//     };
-//     ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_HOST, &io_config, &io_handle));
-
-//     ESP_LOGI(TAG, "Install LCD driver");
-//     esp_lcd_panel_handle_t panel_handle = NULL;
-//     esp_lcd_panel_dev_config_t panel_config = {
-//         .reset_gpio_num = PIN_NUM_RST,
-//         .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_BGR,
-//         .bits_per_pixel = 16,
-//     };
-//     ESP_ERROR_CHECK(esp_lcd_new_panel_ili9341(io_handle, &panel_config, &panel_handle));
-//     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
-//     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
-//     ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, true, false));
-//     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
-
-//     // Backlight
-//     gpio_config_t bk_gpio_config = {
-//         .pin_bit_mask = 1ULL << PIN_NUM_BCKL,
-//         .mode = GPIO_MODE_OUTPUT,
-//     };
-//     ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
-//     gpio_set_level(PIN_NUM_BCKL, 1);
-
-//     ESP_LOGI(TAG, "Initialize LVGL");
-//     const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
-//     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
-
-//     const lvgl_port_display_cfg_t disp_cfg = {
-//         .io_handle = io_handle,
-//         .panel_handle = panel_handle,
-//         .buffer_size = LCD_H_RES * 40,
-//         .double_buffer = false,
-//         .hres = LCD_H_RES,
-//         .vres = LCD_V_RES,
-//         .monochrome = false,
-//         .rotation = {
-//             .swap_xy = false,
-//             .mirror_x = false,
-//             .mirror_y = false,
-//         },
-//         .flags = {
-//             .buff_dma = true,
-//         }
-//     };
-//     lv_disp_t *disp = lvgl_port_add_disp(&disp_cfg);
-
-//     ESP_LOGI(TAG, "Display LVGL UI");
-//     // Lock LVGL để tạo UI
-//     lvgl_port_lock(0);
+    // Cấp phát buffer từ PSRAM (800x48 = 1/10 màn hình 800x480)
+    size_t buf_size = 800 * 48 * sizeof(lv_color_t);
+    buf1 = heap_caps_malloc(buf_size, MALLOC_CAP_SPIRAM);
     
-//     lv_obj_t *scr = lv_disp_get_scr_act(disp);
-//     lv_obj_t *label = lv_label_create(scr);
-//     lv_label_set_text(label, "Hello LVGL!");
-//     lv_obj_center(label);
+    if (buf1 == NULL) {
+        ESP_LOGE(TAG, "      FAILED to allocate LVGL buffer (%d bytes)", buf_size);
+        ESP_LOGE(TAG, "      System halted!");
+        return;
+    }
     
-//     lvgl_port_unlock();
+    lv_disp_draw_buf_init(&draw_buf, buf1, NULL, 800 * 48);
+    ESP_LOGI(TAG, "      Display buffer allocated: %d bytes from PSRAM", buf_size);
 
-//     ESP_LOGI(TAG, "Display initialized");
+    // ========================================
+    // BƯỚC 3: Đăng ký Display Driver
+    // ========================================
+    ESP_LOGI(TAG, "[3/5] Registering display driver...");
     
-//     // Main loop
-//     while (1) {
-//         vTaskDelay(pdMS_TO_TICKS(1000));
-//     }
-// }
+    static lv_disp_drv_t disp_drv;
+    lv_disp_drv_init(&disp_drv);
+    disp_drv.draw_buf = &draw_buf;
+    disp_drv.flush_cb = dummy_flush_cb;  // TODO: Thay bằng driver thật (ILI9341, etc.)
+    disp_drv.hor_res = 800;
+    disp_drv.ver_res = 480;
+    lv_disp_drv_register(&disp_drv);
+    
+    ESP_LOGI(TAG, "      Display driver registered (800x480)");
+    ESP_LOGI(TAG, "      Using dummy flush callback (no physical display)");
+
+    // ========================================
+    // BƯỚC 4: Khởi tạo UI từ SquareLine Studio
+    // ========================================
+    ESP_LOGI(TAG, "[4/5] Initializing UI components...");
+    
+    ui_init();
+    
+    ESP_LOGI(TAG, "      UI initialized successfully");
+
+    // ========================================
+    // BƯỚC 5: Khởi tạo Modbus
+    // ========================================
+    ESP_LOGI(TAG, "[5/5] Initializing Modbus RTU Master...");
+    
+    esp_err_t ret = modbus_manager_init(&modbus_cfg);
+    if (ret == ESP_OK) {
+        modbus_manager_register_callback(modbus_data_received);
+        ESP_LOGI(TAG, "      Modbus initialized successfully");
+        ESP_LOGI(TAG, "      Port: UART%d, Baudrate: %d", modbus_cfg.uart_port, modbus_cfg.baudrate);
+        ESP_LOGI(TAG, "      TX: GPIO%d, RX: GPIO%d, RTS: GPIO%d", 
+                 modbus_cfg.tx_pin, modbus_cfg.rx_pin, modbus_cfg.rts_pin);
+    } else {
+        ESP_LOGE(TAG, "      Modbus initialization FAILED: %s", esp_err_to_name(ret));
+    }
+
+    // ========================================
+    // Tạo Tasks
+    // ========================================
+    ESP_LOGI(TAG, "Creating tasks...");
+    
+    // Task LVGL handler (priority 10 - cao để UI mượt)
+    BaseType_t lvgl_task_ret = xTaskCreate(
+        lvgl_task,
+        "lvgl_task",
+        8192,           // Stack size: 8KB
+        NULL,
+        10,             // Priority: High
+        NULL
+    );
+    
+    if (lvgl_task_ret != pdPASS) {
+        ESP_LOGE(TAG, "Failed to create LVGL task!");
+    } else {
+        ESP_LOGI(TAG, "  - LVGL task created (priority 10)");
+    }
+    
+    // Task Modbus polling (priority 5 - trung bình)
+    if (ret == ESP_OK) {
+        BaseType_t modbus_task_ret = xTaskCreate(
+            modbus_poll_task,
+            "modbus_poll",
+            4096,       // Stack size: 4KB
+            NULL,
+            5,          // Priority: Medium
+            NULL
+        );
+        
+        if (modbus_task_ret != pdPASS) {
+            ESP_LOGE(TAG, "Failed to create Modbus task!");
+        } else {
+            ESP_LOGI(TAG, "  - Modbus polling task created (priority 5)");
+        }
+    }
+
+    // ========================================
+    // Khởi tạo HSM (State Machine)
+    // ========================================
+    ESP_LOGI(TAG, "Initializing HSM...");
+    app_state_hsm_init(&device);
+    ESP_LOGI(TAG, "  - HSM initialized");
+
+    // ========================================
+    // Hoàn tất khởi động
+    // ========================================
+    ESP_LOGI(TAG, "===========================================");
+    ESP_LOGI(TAG, "  System startup completed successfully!");
+    ESP_LOGI(TAG, "  LVGL: Running");
+    ESP_LOGI(TAG, "  Modbus: %s", ret == ESP_OK ? "Running" : "Disabled");
+    ESP_LOGI(TAG, "  Free heap: %d bytes (internal)", esp_get_free_heap_size());
+    ESP_LOGI(TAG, "  Free PSRAM: %d bytes", heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+    ESP_LOGI(TAG, "===========================================");
+    
+    // app_main() kết thúc, nhường CPU cho các task khác
+    // LVGL và Modbus tiếp tục chạy trong background
+}

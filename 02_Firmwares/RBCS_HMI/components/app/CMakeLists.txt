@@ -5,8 +5,8 @@ idf_component_register(
                     REQUIRES        driver 
                                     esp_timer
                                     modbus_manager
-                                    lvgl__lvgl
+                                    lvgl
                                     espressif__esp_lvgl_port
                                     ui  
-                                    hsm
+                                    hsm 
 )

@@ -1,14 +1,4 @@
 dependencies:
-  esp-modbus:
-    component_hash: b3f3cb7c8212ada1ca6aa4a6ecefb27b97babbf1bca8006fd9f989f131daeb00
-    dependencies:
-    - name: idf
-      version: '>=5.0'
-    source:
-      git: https://github.com/phamnamhien/esp-modbus.git
-      path: .
-      type: git
-    version: 523e432f2ec1db2bca52650534f92141e8a8b473
   espressif/cmake_utilities:
     component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
     dependencies:
@@ -62,19 +52,17 @@ dependencies:
       type: idf
     version: 5.5.1
   lvgl/lvgl:
-    component_hash: 948bff879a345149b83065535bbc4a026ce9f47498a22881e432a264b9098015
+    component_hash: d7c1ac037ae6e85d94897f807d6e7ba0946a83e720074fc95a4f6241da9f9f53
     dependencies: []
     source:
-      registry_url: https://components.espressif.com/
+      registry_url: https://components.espressif.com
       type: service
-    version: 8.3.11
+    version: 8.4.0
 direct_dependencies:
-- esp-modbus
 - espressif/esp_lcd_ili9341
 - espressif/esp_lcd_touch
 - espressif/esp_lvgl_port
 - idf
-- lvgl/lvgl
-manifest_hash: 034bd502e29c1c64d4b4b98ffe6fcfc0a397e06ce72a726e790ceca109506bc5
-target: esp32
+manifest_hash: 46420ba6d264cd251e2355af4a0f3814bb8c3d03796b58c439083581a8c1975a
+target: esp32s3
 version: 2.0.0
