@@ -14,7 +14,10 @@ dependencies:
   #   # `public` flag doesn't have an effect dependencies of the `main` component.
   #   # All dependencies of `main` are public by default.
   #   public: true
-  # lvgl/lvgl: "~8.3.11"
-  espressif/esp_lvgl_port: "^1.4.0"
-  espressif/esp_lcd_ili9341: "*"
-  espressif/esp_lcd_touch: "*"
+
+  # LVGL port cho ESP-IDF
+  espressif/esp_lvgl_port: "*"
+  # RGB LCD driver (không cần LCD controller IC riêng)
+  espressif/esp_lcd_rgb_panel: "*"
+  # GT911 touch controller
+  espressif/esp_lcd_touch_gt911: "*"

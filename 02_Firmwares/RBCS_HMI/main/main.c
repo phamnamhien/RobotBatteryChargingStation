@@ -77,7 +77,7 @@ void lvgl_task(void *arg)
         lv_timer_handler();
         
         // Delay 5ms - LVGL khuyến nghị
-        vTaskDelay(pdMS_TO_TICKS(5));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
