@@ -19,7 +19,6 @@ typedef struct {
     int rx_pin;             // RX GPIO pin
     int rts_pin;            // RTS GPIO pin (DE/RE cho RS485)
     uint32_t baudrate;      // Baudrate (9600, 19200, 115200...)
-    uint8_t slave_addr;     // Địa chỉ slave mặc định
 } modbus_config_t;
 
 /**

@@ -2,15 +2,9 @@
 # for more information about component CMakeLists.txt files.
 
 idf_component_register(
-    SRCS main.c                     
-    INCLUDE_DIRS        "."   
-                        "app"      
+    SRCS                main.c
+    INCLUDE_DIRS        "."       
     PRIV_INCLUDE_DIRS                          
-    REQUIRES            modbus_manager
-                        lvgl__lvgl 
-                        espressif__esp_lvgl_port
-                        driver 
-                        esp_timer     
-                        ui         
+    REQUIRES            app
     PRIV_REQUIRES                   
 )

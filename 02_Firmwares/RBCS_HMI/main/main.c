@@ -1,12 +1,17 @@
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_log.h"
-#include "driver/uart.h"
-#include "modbus_manager.h"
+#include "app_states.h"
 
-#include "app_io.h"
 static const char *TAG = "MAIN";
+
+DeviceHSM_t device;
+
+// Cấu hình Modbus
+modbus_config_t modbus_cfg = {
+    .uart_port = APP_IO_UART_NUM,
+    .tx_pin = APP_IO_UART_TX_PIN,
+    .rx_pin = APP_IO_UART_RX_PIN,
+    .rts_pin = APP_IO_UART_RTS_PIN,
+    .baudrate = 9600,
+};
 
 // Callback nhận dữ liệu Modbus
 void modbus_data_received(uint8_t slave_addr, uint8_t reg_type, 
@@ -31,19 +36,19 @@ void modbus_poll_task(void *arg)
             ESP_LOGI(TAG, "Đọc Holding OK");
         }
         
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(200));
         
         // Đọc Input Registers
         if (modbus_read_input_registers(1, 0, 5, input_regs) == ESP_OK) {
             ESP_LOGI(TAG, "Đọc Input OK");
         }
         
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(200));
         
-        // Ghi register
-        modbus_write_single_register(1, 0, 1234);
+        // // Ghi register
+        // modbus_write_single_register(1, 0, 1234);
         
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        // vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
 
@@ -51,16 +56,8 @@ void app_main(void)
 {
     ESP_LOGI(TAG, "Khởi động ứng dụng...");
 
-    // Cấu hình Modbus
-    modbus_config_t modbus_cfg = {
-        .uart_port = APP_IO_UART_NUM,
-        .tx_pin = APP_IO_UART_TX_PIN,
-        .rx_pin = APP_IO_UART_RX_PIN,
-        .rts_pin = APP_IO_UART_RTS_PIN,
-        .baudrate = 9600,
-        .slave_addr = 1
-    };
 
+    
     // Khởi tạo Modbus Manager
     ESP_ERROR_CHECK(modbus_manager_init(&modbus_cfg));
     
@@ -69,6 +66,9 @@ void app_main(void)
 
     // Tạo task Modbus polling
     xTaskCreate(modbus_poll_task, "modbus_poll", 4096, NULL, 5, NULL);
+
+    // Khởi tạo HSM
+    app_state_hsm_init(&device);
 
     // TODO: Khởi tạo UI, WiFi, các module khác...
     ESP_LOGI(TAG, "Các module khác có thể khởi tạo ở đây");
