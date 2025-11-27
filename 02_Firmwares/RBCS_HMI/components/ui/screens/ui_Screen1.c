@@ -7,6 +7,8 @@
 
 lv_obj_t * ui_Screen1 = NULL;
 lv_obj_t * ui_Image1 = NULL;
+lv_obj_t * ui_Bar1 = NULL;
+lv_obj_t * ui_Image2 = NULL;
 // event funtions
 
 // build funtions
@@ -24,6 +26,24 @@ void ui_Screen1_screen_init(void)
     lv_obj_add_flag(ui_Image1, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
     lv_obj_clear_flag(ui_Image1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
+    ui_Bar1 = lv_bar_create(ui_Screen1);
+    lv_bar_set_value(ui_Bar1, 25, LV_ANIM_OFF);
+    lv_bar_set_start_value(ui_Bar1, 0, LV_ANIM_OFF);
+    lv_obj_set_width(ui_Bar1, 800);
+    lv_obj_set_height(ui_Bar1, 10);
+    lv_obj_set_x(ui_Bar1, 0);
+    lv_obj_set_y(ui_Bar1, 235);
+    lv_obj_set_align(ui_Bar1, LV_ALIGN_CENTER);
+
+    ui_Image2 = lv_img_create(ui_Screen1);
+    lv_obj_set_width(ui_Image2, LV_SIZE_CONTENT);   /// 50
+    lv_obj_set_height(ui_Image2, LV_SIZE_CONTENT);    /// 50
+    lv_obj_set_x(ui_Image2, -201);
+    lv_obj_set_y(ui_Image2, 201);
+    lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
+    lv_obj_clear_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
 }
 
 void ui_Screen1_screen_destroy(void)
@@ -33,5 +53,7 @@ void ui_Screen1_screen_destroy(void)
     // NULL screen variables
     ui_Screen1 = NULL;
     ui_Image1 = NULL;
+    ui_Bar1 = NULL;
+    ui_Image2 = NULL;
 
 }

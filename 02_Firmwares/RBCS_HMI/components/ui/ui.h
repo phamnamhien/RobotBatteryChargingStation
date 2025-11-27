@@ -21,6 +21,7 @@ extern "C" {
 #include "screens/ui_Screen1.h"
 #include "screens/ui_Screen2.h"
 #include "screens/ui_Screen3.h"
+#include "screens/ui_Screen4.h"
 
 ///////////////////// VARIABLES ////////////////////
 
@@ -31,6 +32,8 @@ extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE(ui_img_scrsplash_background_png);    // assets/scrSplash_background.png
+LV_IMG_DECLARE(ui_img_scrmain_batteryempty_png);    // assets/scrMain_batteryEmpty.png
+LV_IMG_DECLARE(ui_img_scrsettingicon_png);    // assets/scrSettingIcon.png
 
 // UI INIT
 void ui_init(void);
