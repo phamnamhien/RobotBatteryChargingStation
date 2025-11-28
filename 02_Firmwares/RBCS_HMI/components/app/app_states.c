@@ -38,19 +38,32 @@ app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_ENTRY:
             // ESP_LOGI(TAG, "Writing to Modbus register...");
             // modbus_master_write_single_register(1, 0, 1111);
-            ESP_ERROR_CHECK(ticks_start(blink_1s_timer, 1000));
+            ESP_ERROR_CHECK(ticks_start(blink_1s_timer, 100));
             break;
         case HSME_INIT:
             break;
         case HSME_EXIT:
             break;
         case HSME_BLINK_1S_TIMER:
-            // if(++count % 2 == 0){
-            //     // Slide từ trái sang
-            //     ui_load_screen_slide(ui_Screen1, LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0);
-            // } else {
-            //     // Slide từ phải sang
-            //     ui_load_screen_slide(ui_Screen2, LV_SCR_LOAD_ANIM_OVER_RIGHT, 300, 0);
+            if(++count % 2 == 0) {
+                // Slide từ trái sang
+                if (ui_lock(-1)) {
+                    lv_scr_load_anim(ui_Screen1, LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+                    ui_unlock();
+                }
+            } else {
+                // Slide từ phải sang
+                if (ui_lock(-1)) {
+                    lv_scr_load_anim(ui_Screen2, LV_SCR_LOAD_ANIM_OVER_RIGHT, 300, 0, false);
+                    ui_unlock();
+                }
+            }
+            // if(++count > 100) {
+            //     count = 0;
+            // }
+            // if (ui_lock(-1)) {
+            //     lv_bar_set_value(ui_barSplashLoading, count, LV_ANIM_OFF);
+            //     ui_unlock();
             // }
             ESP_LOGI(TAG, "1s Blink Timer Event");
             break;

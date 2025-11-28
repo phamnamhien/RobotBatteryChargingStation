@@ -18,18 +18,6 @@ modbus_master_config_t modbus_cfg = {
     .baudrate = 9600,
 };
 
-// LCD Configuration
-#define LCD_NUM_FB             2  // Double buffer for maximum speed
-#define LCD_H_RES              800
-#define LCD_V_RES              480
-
-// LVGL Task Configuration
-#define LCD_LVGL_TICK_PERIOD_MS    2
-#define LCD_LVGL_TASK_MAX_DELAY_MS 500
-#define LCD_LVGL_TASK_MIN_DELAY_MS 1
-#define LCD_LVGL_TASK_STACK_SIZE   (4 * 1024)
-#define LCD_LVGL_TASK_PRIORITY     2
-
 // ============================================
 // Global Variables
 // ============================================
@@ -51,15 +39,15 @@ static void screen_img_num4event_handler(lv_event_t *e)
         if (pic_num == 6) pic_num = 1;
         
         switch (pic_num) {
-            case 1:
-                ui_image_set_src(ui_Image4, &ui_img_scrmain_batteryempty_png);
-                break;
-            case 2:
-                ui_image_set_src(ui_Image4, &ui_img_scrsettingicon_png);
-                break;
-            case 3:
-                ui_image_set_src(ui_Image4, &ui_img_scrsplash_background_png);
-                break;
+            // case 1:
+            //     ui_image_set_src(ui_Image4, &ui_img_scrmain_batteryempty_png);
+            //     break;
+            // case 2:
+            //     ui_image_set_src(ui_Image4, &ui_img_scrsettingicon_png);
+            //     break;
+            // case 3:
+            //     ui_image_set_src(ui_Image4, &ui_img_imgsplashbackground_png);
+            //     break;
             default:
                 break;
         }
@@ -106,28 +94,26 @@ void modbus_poll_task(void *arg)
 // LCD & LVGL Callbacks
 // ============================================
 static bool lcd_on_vsync_event(esp_lcd_panel_handle_t panel, 
-                                   const esp_lcd_rgb_panel_event_data_t *event_data, 
-                                   void *user_data)
+                               const esp_lcd_rgb_panel_event_data_t *event_data, 
+                               void *user_data)
 {
     BaseType_t high_task_awoken = pdFALSE;
-    if (xSemaphoreTakeFromISR(sem_gui_ready, &high_task_awoken) == pdTRUE) {
-        xSemaphoreGiveFromISR(sem_vsync_end, &high_task_awoken);
-    }
+    xSemaphoreGiveFromISR(sem_vsync_end, &high_task_awoken);
     return high_task_awoken == pdTRUE;
 }
 
 static void lcd_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
     esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t)drv->user_data;
-    int offsetx1 = area->x1;
-    int offsetx2 = area->x2;
-    int offsety1 = area->y1;
-    int offsety2 = area->y2;
     
-    xSemaphoreGive(sem_gui_ready);
+    // Đợi VSYNC để tránh tearing
     xSemaphoreTake(sem_vsync_end, portMAX_DELAY);
     
-    esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, color_map);
+    esp_lcd_panel_draw_bitmap(panel_handle, 
+                              area->x1, area->y1, 
+                              area->x2 + 1, area->y2 + 1, 
+                              color_map);
+    
     lv_disp_flush_ready(drv);
 }
 
@@ -355,7 +341,7 @@ void app_main(void)
     disp_drv.flush_cb = lcd_lvgl_flush_cb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
-    disp_drv.full_refresh = true;
+    disp_drv.full_refresh = false;
     lv_disp_drv_register(&disp_drv);
     ESP_LOGI(TAG, "      Display driver registered (%dx%d)", LCD_H_RES, LCD_V_RES);
 
@@ -404,7 +390,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Initializing SquareLine UI...");
     if (ui_lock(-1)) {
         ui_init();
-        lv_obj_add_event_cb(ui_Image4, screen_img_num4event_handler, LV_EVENT_CLICKED, NULL);
+        // lv_obj_add_event_cb(ui_Image4, screen_img_num4event_handler, LV_EVENT_CLICKED, NULL);
         ui_unlock();
     }
     ESP_LOGI(TAG, "      SquareLine UI initialized");

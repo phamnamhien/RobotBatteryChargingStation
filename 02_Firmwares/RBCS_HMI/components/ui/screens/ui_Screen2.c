@@ -6,19 +6,7 @@
 #include "../ui.h"
 
 lv_obj_t * ui_Screen2 = NULL;
-lv_obj_t * ui_Image4 = NULL;
-lv_obj_t * ui_ImgButton1 = NULL;
-lv_obj_t * ui_Image9 = NULL;
-lv_obj_t * ui_Label2 = NULL;
-lv_obj_t * ui_Label1 = NULL;
-lv_obj_t * ui_Label4 = NULL;
-lv_obj_t * ui_Bar2 = NULL;
-lv_obj_t * ui_Image12 = NULL;
-lv_obj_t * ui_ImgButton2 = NULL;
-lv_obj_t * ui_ImgButton3 = NULL;
-lv_obj_t * ui_ImgButton4 = NULL;
-lv_obj_t * ui_ImgButton5 = NULL;
-lv_obj_t * ui_Label5 = NULL;
+lv_obj_t * ui_imgMainBackground = NULL;
 // event funtions
 
 // build funtions
@@ -30,122 +18,13 @@ void ui_Screen2_screen_init(void)
     lv_obj_set_style_bg_color(ui_Screen2, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Screen2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    ui_Image4 = lv_img_create(ui_Screen2);
-    lv_obj_set_width(ui_Image4, LV_SIZE_CONTENT);   /// 800
-    lv_obj_set_height(ui_Image4, LV_SIZE_CONTENT);    /// 480
-    lv_obj_set_align(ui_Image4, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image4, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
-    lv_obj_clear_flag(ui_Image4, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-
-    ui_ImgButton1 = lv_imgbtn_create(ui_Screen2);
-    lv_obj_set_width(ui_ImgButton1, 154);
-    lv_obj_set_height(ui_ImgButton1, 70);
-    lv_obj_set_x(ui_ImgButton1, -318);
-    lv_obj_set_y(ui_ImgButton1, -125);
-    lv_obj_set_align(ui_ImgButton1, LV_ALIGN_CENTER);
-
-    ui_Image9 = lv_img_create(ui_Screen2);
-    lv_img_set_src(ui_Image9, &ui_img_scrmain_batteryempty_png);
-    lv_obj_set_width(ui_Image9, LV_SIZE_CONTENT);   /// 59
-    lv_obj_set_height(ui_Image9, LV_SIZE_CONTENT);    /// 31
-    lv_obj_set_x(ui_Image9, -360);
-    lv_obj_set_y(ui_Image9, -113);
-    lv_obj_set_align(ui_Image9, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image9, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
-    lv_obj_clear_flag(ui_Image9, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-
-    ui_Label2 = lv_label_create(ui_Screen2);
-    lv_obj_set_width(ui_Label2, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label2, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label2, 14);
-    lv_obj_set_y(ui_Label2, 89);
-    lv_label_set_text(ui_Label2, "SLOT 1");
-    lv_obj_set_style_text_color(ui_Label2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_Label2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_Label2, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    ui_Label1 = lv_label_create(ui_Screen2);
-    lv_obj_set_width(ui_Label1, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label1, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label1, 90);
-    lv_obj_set_y(ui_Label1, 94);
-    lv_label_set_text(ui_Label1, "48.2V");
-    lv_obj_set_style_text_color(ui_Label1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_Label1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    ui_Label4 = lv_label_create(ui_Screen2);
-    lv_obj_set_width(ui_Label4, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label4, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label4, 95);
-    lv_obj_set_y(ui_Label4, 118);
-    lv_label_set_text(ui_Label4, "36*C");
-    lv_obj_set_style_text_color(ui_Label4, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_Label4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_Label4, &lv_font_montserrat_16, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    ui_Bar2 = lv_bar_create(ui_Screen2);
-    lv_bar_set_value(ui_Bar2, 25, LV_ANIM_OFF);
-    lv_bar_set_start_value(ui_Bar2, 0, LV_ANIM_OFF);
-    lv_obj_set_width(ui_Bar2, 47);
-    lv_obj_set_height(ui_Bar2, 23);
-    lv_obj_set_x(ui_Bar2, 15);
-    lv_obj_set_y(ui_Bar2, 116);
-    lv_obj_set_style_bg_color(ui_Bar2, lv_color_hex(0xDEDADE), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_Bar2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    lv_obj_set_style_bg_color(ui_Bar2, lv_color_hex(0x000000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_Bar2, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-
-    ui_Image12 = lv_img_create(ui_Screen2);
-    lv_img_set_src(ui_Image12, &ui_img_scrsettingicon_png);
-    lv_obj_set_width(ui_Image12, LV_SIZE_CONTENT);   /// 50
-    lv_obj_set_height(ui_Image12, LV_SIZE_CONTENT);    /// 50
-    lv_obj_set_x(ui_Image12, 370);
-    lv_obj_set_y(ui_Image12, -210);
-    lv_obj_set_align(ui_Image12, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image12, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
-    lv_obj_clear_flag(ui_Image12, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-
-    ui_ImgButton2 = lv_imgbtn_create(ui_Screen2);
-    lv_obj_set_width(ui_ImgButton2, 154);
-    lv_obj_set_height(ui_ImgButton2, 70);
-    lv_obj_set_x(ui_ImgButton2, -318);
-    lv_obj_set_y(ui_ImgButton2, 29);
-    lv_obj_set_align(ui_ImgButton2, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_ImgButton2, LV_OBJ_FLAG_HIDDEN);     /// Flags
-
-    ui_ImgButton3 = lv_imgbtn_create(ui_Screen2);
-    lv_obj_set_width(ui_ImgButton3, 154);
-    lv_obj_set_height(ui_ImgButton3, 70);
-    lv_obj_set_x(ui_ImgButton3, -318);
-    lv_obj_set_y(ui_ImgButton3, -48);
-    lv_obj_set_align(ui_ImgButton3, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_ImgButton3, LV_OBJ_FLAG_HIDDEN);     /// Flags
-
-    ui_ImgButton4 = lv_imgbtn_create(ui_Screen2);
-    lv_obj_set_width(ui_ImgButton4, 154);
-    lv_obj_set_height(ui_ImgButton4, 70);
-    lv_obj_set_x(ui_ImgButton4, -318);
-    lv_obj_set_y(ui_ImgButton4, 183);
-    lv_obj_set_align(ui_ImgButton4, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_ImgButton4, LV_OBJ_FLAG_HIDDEN);     /// Flags
-
-    ui_ImgButton5 = lv_imgbtn_create(ui_Screen2);
-    lv_obj_set_width(ui_ImgButton5, 154);
-    lv_obj_set_height(ui_ImgButton5, 70);
-    lv_obj_set_x(ui_ImgButton5, -318);
-    lv_obj_set_y(ui_ImgButton5, 106);
-    lv_obj_set_align(ui_ImgButton5, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_ImgButton5, LV_OBJ_FLAG_HIDDEN);     /// Flags
-
-    ui_Label5 = lv_label_create(ui_Screen2);
-    lv_obj_set_width(ui_Label5, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_Label5, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label5, 155);
-    lv_obj_set_y(ui_Label5, 7);
-    lv_label_set_text(ui_Label5, "BATTERY SLOTS STATUS");
-    lv_obj_set_style_text_font(ui_Label5, &lv_font_montserrat_38, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_imgMainBackground = lv_img_create(ui_Screen2);
+    lv_img_set_src(ui_imgMainBackground, &ui_img_scrmain_background_png);
+    lv_obj_set_width(ui_imgMainBackground, LV_SIZE_CONTENT);   /// 800
+    lv_obj_set_height(ui_imgMainBackground, LV_SIZE_CONTENT);    /// 480
+    lv_obj_set_align(ui_imgMainBackground, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_imgMainBackground, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
+    lv_obj_clear_flag(ui_imgMainBackground, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
 }
 
@@ -155,18 +34,6 @@ void ui_Screen2_screen_destroy(void)
 
     // NULL screen variables
     ui_Screen2 = NULL;
-    ui_Image4 = NULL;
-    ui_ImgButton1 = NULL;
-    ui_Image9 = NULL;
-    ui_Label2 = NULL;
-    ui_Label1 = NULL;
-    ui_Label4 = NULL;
-    ui_Bar2 = NULL;
-    ui_Image12 = NULL;
-    ui_ImgButton2 = NULL;
-    ui_ImgButton3 = NULL;
-    ui_ImgButton4 = NULL;
-    ui_ImgButton5 = NULL;
-    ui_Label5 = NULL;
+    ui_imgMainBackground = NULL;
 
 }
