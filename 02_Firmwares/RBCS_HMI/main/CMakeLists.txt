@@ -3,7 +3,6 @@
 
 idf_component_register(
     SRCS                "main.c"
-                        "sqrline_ui.c"
     INCLUDE_DIRS        "."       
     PRIV_INCLUDE_DIRS                          
     REQUIRES            app

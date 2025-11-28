@@ -18,18 +18,19 @@
 #include "modbus_master_manager.h"
 #include "esp_timer.h"
 
+#include "hsm.h"
+#include "esp_timer.h"
+#include "esp_ticks.h"
+#include "app_io.h"
+#include "ui_support.h"
+
+#include "lvgl.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
 #include "esp_lcd_touch_gt911.h"
-
-#include "lvgl.h"
 #include "ui.h"
-
-#include "hsm.h"
-#include "app_io.h"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +40,7 @@ typedef enum {
 	HSME_LOOP = HSME_START,
 
 	HSME_LOADING_DONE,
-
+	HSME_BLINK_1S_TIMER,
 } HSMEvent_t;
 
 typedef struct {

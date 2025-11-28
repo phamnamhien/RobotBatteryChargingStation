@@ -13,5 +13,6 @@ idf_component_register(
                                     esp_lcd_touch_gt911
                                     esp_lcd_touch
                                     lvgl
-                                    ui                               
+                                    ui   
+                                    ui_support                            
 )
