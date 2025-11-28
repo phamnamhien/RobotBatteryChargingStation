@@ -26,7 +26,7 @@ app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
             ESP_LOGI(TAG, "Writing to Modbus register...");
-            modbus_write_single_register(1, 0, 1111);
+            modbus_master_write_single_register(1, 0, 1111);
             break;
         case HSME_INIT:
             break;

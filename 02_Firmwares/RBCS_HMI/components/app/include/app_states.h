@@ -3,20 +3,26 @@
 
 
 #include <stdio.h>
+#include "sdkconfig.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 
 #include "driver/gpio.h"
 #include "driver/uart.h"
+#include "driver/i2c.h"
 #include "driver/spi_master.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "modbus_manager.h"
+#include "modbus_master_manager.h"
 #include "esp_timer.h"
 
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
 #include "esp_lcd_panel_ops.h"
+#include "esp_lcd_panel_rgb.h"
+#include "esp_lcd_touch_gt911.h"
 
 #include "lvgl.h"
 #include "ui.h"

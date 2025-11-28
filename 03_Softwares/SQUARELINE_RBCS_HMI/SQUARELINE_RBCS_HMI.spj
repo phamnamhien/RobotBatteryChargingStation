@@ -312,7 +312,38 @@
               },
               {
                 "part": "lv.PART.MAIN",
-                "childs": [],
+                "childs": [
+                  {
+                    "nid": 10000,
+                    "strtype": "_style/StyleState",
+                    "strval": "DEFAULT",
+                    "childs": [
+                      {
+                        "nid": 10510,
+                        "strtype": "_style/Bg_Radius",
+                        "InheritedType": 6
+                      },
+                      {
+                        "nid": 10520,
+                        "strtype": "_style/Bg_Color",
+                        "intarray": [
+                          255,
+                          255,
+                          255,
+                          255
+                        ],
+                        "InheritedType": 7
+                      },
+                      {
+                        "nid": 11010,
+                        "strtype": "_style/Blend mode",
+                        "strval": "MULTIPLY",
+                        "InheritedType": 3
+                      }
+                    ],
+                    "InheritedType": 1
+                  }
+                ],
                 "nid": 1060,
                 "strtype": "BAR/Style_main",
                 "strval": "lv.PART.MAIN, Rectangle, Pad, Anim1, Transform",
@@ -320,7 +351,32 @@
               },
               {
                 "part": "lv.PART.INDICATOR",
-                "childs": [],
+                "childs": [
+                  {
+                    "nid": 10000,
+                    "strtype": "_style/StyleState",
+                    "strval": "DEFAULT",
+                    "childs": [
+                      {
+                        "nid": 10510,
+                        "strtype": "_style/Bg_Radius",
+                        "InheritedType": 6
+                      },
+                      {
+                        "nid": 10520,
+                        "strtype": "_style/Bg_Color",
+                        "intarray": [
+                          50,
+                          74,
+                          129,
+                          255
+                        ],
+                        "InheritedType": 7
+                      }
+                    ],
+                    "InheritedType": 1
+                  }
+                ],
                 "nid": 1070,
                 "strtype": "BAR/Style_indicator",
                 "strval": "lv.PART.INDICATOR, Rectangle",
@@ -896,31 +952,31 @@
               {
                 "nid": 1040,
                 "strtype": "IMGBUTTON/Image_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1050,
                 "strtype": "IMGBUTTON/Image_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1060,
                 "strtype": "IMGBUTTON/Image_checked_released",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1070,
                 "strtype": "IMGBUTTON/Image_checked_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1080,
                 "strtype": "IMGBUTTON/Image_checked_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
@@ -2095,31 +2151,31 @@
               {
                 "nid": 1040,
                 "strtype": "IMGBUTTON/Image_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1050,
                 "strtype": "IMGBUTTON/Image_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1060,
                 "strtype": "IMGBUTTON/Image_checked_released",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1070,
                 "strtype": "IMGBUTTON/Image_checked_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1080,
                 "strtype": "IMGBUTTON/Image_checked_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
@@ -2263,31 +2319,31 @@
               {
                 "nid": 1040,
                 "strtype": "IMGBUTTON/Image_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1050,
                 "strtype": "IMGBUTTON/Image_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1060,
                 "strtype": "IMGBUTTON/Image_checked_released",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1070,
                 "strtype": "IMGBUTTON/Image_checked_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1080,
                 "strtype": "IMGBUTTON/Image_checked_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
@@ -2430,31 +2486,31 @@
               {
                 "nid": 1040,
                 "strtype": "IMGBUTTON/Image_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1050,
                 "strtype": "IMGBUTTON/Image_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1060,
                 "strtype": "IMGBUTTON/Image_checked_released",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1070,
                 "strtype": "IMGBUTTON/Image_checked_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1080,
                 "strtype": "IMGBUTTON/Image_checked_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
@@ -2597,31 +2653,31 @@
               {
                 "nid": 1040,
                 "strtype": "IMGBUTTON/Image_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1050,
                 "strtype": "IMGBUTTON/Image_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1060,
                 "strtype": "IMGBUTTON/Image_checked_released",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1070,
                 "strtype": "IMGBUTTON/Image_checked_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1080,
                 "strtype": "IMGBUTTON/Image_checked_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
@@ -3055,31 +3111,31 @@
               {
                 "nid": 1040,
                 "strtype": "IMGBUTTON/Image_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1050,
                 "strtype": "IMGBUTTON/Image_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1060,
                 "strtype": "IMGBUTTON/Image_checked_released",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1070,
                 "strtype": "IMGBUTTON/Image_checked_pressed",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
                 "nid": 1080,
                 "strtype": "IMGBUTTON/Image_checked_disabled",
-                "strval": "",
+                "strval": "-",
                 "InheritedType": 5
               },
               {
@@ -3967,7 +4023,7 @@
     "depth": 1,
     "width": 800,
     "height": 480,
-    "rotation": 0,
+    "rotation": 180,
     "offset_x": 0,
     "offset_y": 0,
     "shape": "RECTANGLE",
@@ -3987,13 +4043,13 @@
     "theme_color1": 5,
     "theme_color2": 0,
     "custom_variable_prefix": "uic",
-    "backup_cnt": 18,
+    "backup_cnt": 21,
     "autosave_cnt": 0,
     "group_color_cnt": 0,
     "lvgl_version": "8.3.11",
     "callfuncsexport": "C_FILE",
     "imageexport": "SOURCE",
-    "lvgl_include_path": null,
+    "lvgl_include_path": "",
     "naming": "Name",
     "naming_force_lowercase": false,
     "naming_add_subcomponent": false,

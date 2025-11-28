@@ -1,0 +1,10 @@
+## IDF Component Manager Manifest File
+dependencies:
+  idf:
+    version: '>=5.0.0'
+  
+  # ESP-MODBUS
+  espressif/esp-modbus:
+    version: "^2.1.0"
+    public: true
+  

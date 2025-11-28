@@ -3,10 +3,12 @@ idf_component_register(
                                     "app_states.c"
                     INCLUDE_DIRS    "include"
                     REQUIRES        driver 
+                                    nvs_flash
                                     esp_timer
+                                    esp_ticks
                                     hsm 
 
-                                    modbus_manager
+                                    modbus_master_manager
 
                                     esp_lcd_touch_gt911
                                     esp_lcd_touch

@@ -11,6 +11,7 @@ idf_component_register(
         "components/ui_comp_hook.c"
         "ui_helpers.c"
         "images/ui_img_scrsplash_background_png.c"
+        "images/ui_img_robot_4_png.c"
         "images/ui_img_scrmain_batteryempty_png.c"
         "images/ui_img_scrsettingicon_png.c"
     INCLUDE_DIRS 

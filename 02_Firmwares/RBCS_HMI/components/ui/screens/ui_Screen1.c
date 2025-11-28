@@ -34,8 +34,17 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_x(ui_Bar1, 0);
     lv_obj_set_y(ui_Bar1, 235);
     lv_obj_set_align(ui_Bar1, LV_ALIGN_CENTER);
+    lv_obj_set_style_radius(ui_Bar1, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_Bar1, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Bar1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_blend_mode(ui_Bar1, LV_BLEND_MODE_MULTIPLY, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_radius(ui_Bar1, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_Bar1, lv_color_hex(0x324A81), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Bar1, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
 
     ui_Image2 = lv_img_create(ui_Screen1);
+    lv_img_set_src(ui_Image2, &ui_img_robot_4_png);
     lv_obj_set_width(ui_Image2, LV_SIZE_CONTENT);   /// 50
     lv_obj_set_height(ui_Image2, LV_SIZE_CONTENT);    /// 50
     lv_obj_set_x(ui_Image2, -201);

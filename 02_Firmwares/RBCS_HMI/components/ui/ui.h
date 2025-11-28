@@ -32,6 +32,7 @@ extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE(ui_img_scrsplash_background_png);    // assets/scrSplash_background.png
+LV_IMG_DECLARE(ui_img_robot_4_png);    // assets/robot 4.png
 LV_IMG_DECLARE(ui_img_scrmain_batteryempty_png);    // assets/scrMain_batteryEmpty.png
 LV_IMG_DECLARE(ui_img_scrsettingicon_png);    // assets/scrSettingIcon.png
 
