@@ -12,7 +12,7 @@ idf_component_register(
         "ui_helpers.c"
         "images/ui_img_imgsplashbackground_png.c"
         "images/ui_img_robot_4_png.c"
-        "images/ui_img_scrmain_background_png.c"
+        "images/ui_img_imgmainbackground_png.c"
         "images/ui_img_scrsettingicon_png.c"
     INCLUDE_DIRS 
         "."

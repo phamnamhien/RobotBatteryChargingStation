@@ -19,7 +19,7 @@ void ui_Screen2_screen_init(void)
     lv_obj_set_style_bg_opa(ui_Screen2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_imgMainBackground = lv_img_create(ui_Screen2);
-    lv_img_set_src(ui_imgMainBackground, &ui_img_scrmain_background_png);
+    lv_img_set_src(ui_imgMainBackground, &ui_img_imgmainbackground_png);
     lv_obj_set_width(ui_imgMainBackground, LV_SIZE_CONTENT);   /// 800
     lv_obj_set_height(ui_imgMainBackground, LV_SIZE_CONTENT);    /// 480
     lv_obj_set_align(ui_imgMainBackground, LV_ALIGN_CENTER);

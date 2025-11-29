@@ -816,8 +816,8 @@
         "deepid": -1859691017,
         "children": [
           {
-            "guid": "GUID67146131-464490S86574332",
-            "deepid": 52419868,
+            "guid": "GUID28253049-464494S5794333",
+            "deepid": 320087244,
             "dont_export": false,
             "locked": false,
             "properties": [
@@ -944,7 +944,7 @@
               {
                 "nid": 1020,
                 "strtype": "IMAGE/Asset",
-                "strval": "assets/scrMain_background.png",
+                "strval": "assets/imgMainBackground.png",
                 "InheritedType": 5
               },
               {
@@ -976,7 +976,8 @@
                 "InheritedType": 11
               }
             ],
-            "saved_objtypeKey": "IMAGE"
+            "saved_objtypeKey": "IMAGE",
+            "tree_closed": true
           }
         ],
         "isPage": true,
@@ -2171,7 +2172,7 @@
     "theme_color1": 5,
     "theme_color2": 0,
     "custom_variable_prefix": "uic",
-    "backup_cnt": 29,
+    "backup_cnt": 32,
     "autosave_cnt": 0,
     "group_color_cnt": 0,
     "lvgl_version": "8.3.11",

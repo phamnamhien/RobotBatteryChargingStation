@@ -31,14 +31,13 @@ app_state_hsm_init(DeviceHSM_t *me) {
 
 
 uint8_t count = 0;
-
 static HSM_EVENT 
 app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
             // ESP_LOGI(TAG, "Writing to Modbus register...");
             // modbus_master_write_single_register(1, 0, 1111);
-            ESP_ERROR_CHECK(ticks_start(blink_1s_timer, 100));
+            ESP_ERROR_CHECK(ticks_start(blink_1s_timer, 2000));
             break;
         case HSME_INIT:
             break;
@@ -48,13 +47,13 @@ app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
             if(++count % 2 == 0) {
                 // Slide từ trái sang
                 if (ui_lock(-1)) {
-                    lv_scr_load_anim(ui_Screen1, LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+                    ui_load_screen_slide(ui_Screen1, LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0);
                     ui_unlock();
                 }
             } else {
                 // Slide từ phải sang
                 if (ui_lock(-1)) {
-                    lv_scr_load_anim(ui_Screen2, LV_SCR_LOAD_ANIM_OVER_RIGHT, 300, 0, false);
+                    ui_load_screen_slide(ui_Screen2, LV_SCR_LOAD_ANIM_OVER_RIGHT, 300, 0);
                     ui_unlock();
                 }
             }
