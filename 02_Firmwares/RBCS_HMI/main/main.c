@@ -28,31 +28,31 @@ static SemaphoreHandle_t sem_gui_ready;
 // ============================================
 // SquareLine UI Event Handler
 // ============================================
-static uint8_t pic_num = 1;
+// static uint8_t pic_num = 1;
 
-static void screen_img_num4event_handler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
+// static void screen_img_num4event_handler(lv_event_t *e)
+// {
+//     lv_event_code_t code = lv_event_get_code(e);
     
-    if (code == LV_EVENT_CLICKED) {
-        pic_num++;
-        if (pic_num == 6) pic_num = 1;
+//     if (code == LV_EVENT_CLICKED) {
+//         pic_num++;
+//         if (pic_num == 6) pic_num = 1;
         
-        switch (pic_num) {
-            // case 1:
-            //     ui_image_set_src(ui_Image4, &ui_img_scrmain_batteryempty_png);
-            //     break;
-            // case 2:
-            //     ui_image_set_src(ui_Image4, &ui_img_scrsettingicon_png);
-            //     break;
-            // case 3:
-            //     ui_image_set_src(ui_Image4, &ui_img_imgsplashbackground_png);
-            //     break;
-            default:
-                break;
-        }
-    }
-}
+//         switch (pic_num) {
+//             // case 1:
+//             //     ui_image_set_src(ui_Image4, &ui_img_scrmain_batteryempty_png);
+//             //     break;
+//             // case 2:
+//             //     ui_image_set_src(ui_Image4, &ui_img_scrsettingicon_png);
+//             //     break;
+//             // case 3:
+//             //     ui_image_set_src(ui_Image4, &ui_img_imgsplashbackground_png);
+//             //     break;
+//             default:
+//                 break;
+//         }
+//     }
+// }
 
 // ============================================
 // Modbus Callbacks & Task

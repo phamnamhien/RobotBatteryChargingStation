@@ -16,7 +16,7 @@ dependencies:
       require: private
       version: '>=4.4.2'
     source:
-      registry_url: https://components.espressif.com/
+      registry_url: https://components.espressif.com
       type: service
     version: 1.1.2
   espressif/esp_lcd_touch_gt911:
@@ -46,10 +46,9 @@ dependencies:
     version: 8.3.11
 direct_dependencies:
 - espressif/esp-modbus
-- espressif/esp_lcd_touch
 - espressif/esp_lcd_touch_gt911
 - idf
 - lvgl/lvgl
-manifest_hash: 4942e7d1ac56e5c69759a7ab3d1d640f6a7becef60ee36d7aae624cc4cb9c9d0
+manifest_hash: 9e337976614ddddb3c3e8fa7e9324046a0a0c684c56875ba38d1d23728ef8850
 target: esp32s3
 version: 2.0.0

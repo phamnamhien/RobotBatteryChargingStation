@@ -10,10 +10,10 @@
 extern "C" {
 #endif
 
-#define APP_IO_UART_NUM       UART_NUM_2
-#define APP_IO_UART_TX_PIN    9  
-#define APP_IO_UART_RX_PIN    16
-#define APP_IO_UART_RTS_PIN   4
+#define APP_IO_UART_NUM       UART_NUM_2  
+#define APP_IO_UART_TX_PIN    15  // RS485_TX
+#define APP_IO_UART_RX_PIN    16  // RS485_RX
+#define APP_IO_UART_RTS_PIN   -1  // Auto direction switching
 
 // ============================================
 // Hardware Pin Definitions

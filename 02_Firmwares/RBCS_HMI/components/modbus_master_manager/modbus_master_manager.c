@@ -64,27 +64,42 @@ esp_err_t modbus_master_init(const modbus_master_config_t *config)
     comm_info.ser_opts.data_bits = UART_DATA_8_BITS;
     comm_info.ser_opts.parity = MB_PARITY_NONE;
     comm_info.ser_opts.stop_bits = UART_STOP_BITS_1;
-    comm_info.ser_opts.uid = 1;  // Master UID (not used in RTU mode)
+    comm_info.ser_opts.uid = 0;  // Unused for master
 
-    // Create Modbus Master
+    // ✅ BƯỚC 1: Create Modbus Master
     esp_err_t err = mbc_master_create_serial(&comm_info, &modbus_master_ctx.master_handle);
-    if (err != ESP_OK) {
+    if (err != ESP_OK || modbus_master_ctx.master_handle == NULL) {
         ESP_LOGE(TAG, "Failed to create Modbus Master: %s", esp_err_to_name(err));
         vSemaphoreDelete(modbus_master_ctx.mutex);
         return err;
     }
 
-    // Configure GPIO pins
-    err = uart_set_pin(config->uart_port, config->tx_pin, config->rx_pin, 
-                       config->rts_pin, UART_PIN_NO_CHANGE);
+    // ✅ BƯỚC 2: Set UART pins
+    int tx = (config->tx_pin == -1) ? UART_PIN_NO_CHANGE : config->tx_pin;
+    int rx = (config->rx_pin == -1) ? UART_PIN_NO_CHANGE : config->rx_pin;
+    int rts = (config->rts_pin == -1) ? UART_PIN_NO_CHANGE : config->rts_pin;
+    
+    err = uart_set_pin(config->uart_port, tx, rx, rts, UART_PIN_NO_CHANGE);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to configure GPIO: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Failed to set UART pins: %s", esp_err_to_name(err));
         mbc_master_delete(modbus_master_ctx.master_handle);
         vSemaphoreDelete(modbus_master_ctx.mutex);
         return err;
     }
 
-    // Start Modbus stack
+    // ✅ BƯỚC 3: Set RS485 Half Duplex mode (QUAN TRỌNG!)
+    err = uart_set_mode(config->uart_port, UART_MODE_RS485_HALF_DUPLEX);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to set RS485 mode: %s", esp_err_to_name(err));
+        mbc_master_delete(modbus_master_ctx.master_handle);
+        vSemaphoreDelete(modbus_master_ctx.mutex);
+        return err;
+    }
+
+    // ✅ BƯỚC 4: Delay nhỏ
+    vTaskDelay(pdMS_TO_TICKS(5));
+
+    // ✅ BƯỚC 5: Start Modbus stack
     err = mbc_master_start(modbus_master_ctx.master_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to start Modbus: %s", esp_err_to_name(err));
