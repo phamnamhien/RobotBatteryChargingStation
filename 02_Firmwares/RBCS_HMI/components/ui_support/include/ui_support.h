@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 // LCD Configuration
-#define LCD_NUM_FB                  2  // Double buffer for maximum speed
+#define LCD_NUM_FB                  1  // Double buffer for maximum speed
 #define LCD_H_RES                   800
 #define LCD_V_RES                   480
 

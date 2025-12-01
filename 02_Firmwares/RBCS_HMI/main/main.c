@@ -279,17 +279,24 @@ void app_main(void)
     // ========================================
     ESP_LOGI(TAG, "[3/7] Allocating LVGL draw buffers...");
     static lv_disp_draw_buf_t disp_buf;
+    // void *buf1 = NULL;
+    // void *buf2 = NULL;
+    // size_t buffer_size = LCD_H_RES * LCD_V_RES * sizeof(lv_color_t);
+    
+    // buf1 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
+    // buf2 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
+    // assert(buf1 && buf2);
+    
+    // lv_disp_draw_buf_init(&disp_buf, buf1, buf2, LCD_H_RES * LCD_V_RES);
+    // ESP_LOGI(TAG, "      Double buffering: %d bytes x2", buffer_size);
     void *buf1 = NULL;
-    void *buf2 = NULL;
     size_t buffer_size = LCD_H_RES * LCD_V_RES * sizeof(lv_color_t);
-    
-    buf1 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
-    buf2 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
-    assert(buf1 && buf2);
-    
-    lv_disp_draw_buf_init(&disp_buf, buf1, buf2, LCD_H_RES * LCD_V_RES);
-    ESP_LOGI(TAG, "      Double buffering: %d bytes x2", buffer_size);
 
+    buf1 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
+    assert(buf1);
+
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, LCD_H_RES * LCD_V_RES);
+    ESP_LOGI(TAG, "      Single buffering: %d bytes", buffer_size);
     // ========================================
     // STEP 4: Initialize RGB LCD Panel
     // ========================================
@@ -327,7 +334,7 @@ void app_main(void)
             .flags.pclk_active_neg = true,
         },
         .flags.fb_in_psram = true,
-        .flags.double_fb = true,
+        .flags.double_fb = false,
     };
     
     ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&panel_config, &panel_handle));
