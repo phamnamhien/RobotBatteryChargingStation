@@ -34,7 +34,7 @@ extern "C" {
 
 //----HSM OPTIONAL FEATURES SECTION[BEGIN]----
 // Enable for HSM debugging
-#define HSM_FEATURE_DEBUG_ENABLE            1
+#define HSM_FEATURE_DEBUG_ENABLE            0
     // If HSM_FEATURE_DEBUG_ENABLE is defined, then select DEBUG OUT type
     //#define HSM_FEATURE_DEBUG_EMBEDDED
     // If HSM_FEATURE_DEBUG_ENABLE is defined, you can define HSM_DEBUG_EVT2STR for custom "event to string" function

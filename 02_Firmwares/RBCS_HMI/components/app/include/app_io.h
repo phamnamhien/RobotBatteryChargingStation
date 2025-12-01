@@ -11,8 +11,8 @@ extern "C" {
 #endif
 
 #define APP_IO_UART_NUM       UART_NUM_2  
-#define APP_IO_UART_TX_PIN    15  // RS485_TX
-#define APP_IO_UART_RX_PIN    16  // RS485_RX
+#define APP_IO_UART_TX_PIN    16  // RS485_TX
+#define APP_IO_UART_RX_PIN    15  // RS485_RX
 #define APP_IO_UART_RTS_PIN   -1  // Auto direction switching
 
 // ============================================
@@ -23,7 +23,7 @@ extern "C" {
 #define I2C_MASTER_SCL_IO           9
 #define I2C_MASTER_SDA_IO           8
 #define I2C_MASTER_NUM              0
-#define I2C_MASTER_FREQ_HZ          400000
+#define I2C_MASTER_FREQ_HZ          100000
 #define I2C_MASTER_TX_BUF_DISABLE   0
 #define I2C_MASTER_RX_BUF_DISABLE   0
 #define I2C_MASTER_TIMEOUT_MS       1000

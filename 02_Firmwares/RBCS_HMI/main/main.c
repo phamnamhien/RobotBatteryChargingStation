@@ -72,21 +72,40 @@ void modbus_data_received(uint8_t slave_addr, uint8_t reg_type,
 
 void modbus_poll_task(void *arg)
 {
-    uint16_t holding_regs[10];
-    uint16_t input_regs[5];
+    uint16_t holding_regs[60];
+    // uint16_t input_regs[60];
     
     ESP_LOGI(TAG, "Modbus polling task started");
 
     while (1) {
-        if (modbus_master_read_holding_registers(1, 0, 10, holding_regs) == ESP_OK) {
-            ESP_LOGI(TAG, "Modbus: Read Holding OK");
+        if (modbus_master_read_holding_registers(1, 0, 51, holding_regs) == ESP_OK) {
+            ESP_LOGI(TAG, "Modbus: Read Holding 40001-40051 OK");
         }
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_input_registers(1, 0, 5, input_regs) == ESP_OK) {
-            ESP_LOGI(TAG, "Modbus: Read Input OK");
+        if (modbus_master_read_holding_registers(1, 100, 51, holding_regs) == ESP_OK) {
+            ESP_LOGI(TAG, "Modbus: Read Holding 40101-40151 OK");
         }
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        if (modbus_master_read_holding_registers(1, 200, 51, holding_regs) == ESP_OK) {
+            ESP_LOGI(TAG, "Modbus: Read Holding 40201-40251 OK");
+        }
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        if (modbus_master_read_holding_registers(1, 300, 51, holding_regs) == ESP_OK) {
+            ESP_LOGI(TAG, "Modbus: Read Holding 40301-40351 OK");
+        }
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        if (modbus_master_read_holding_registers(1, 400, 51, holding_regs) == ESP_OK) {
+            ESP_LOGI(TAG, "Modbus: Read Holding 40401-40451 OK");
+        }
+        vTaskDelay(pdMS_TO_TICKS(600));
+        // if (modbus_master_read_input_registers(1, 0, 51, input_regs) == ESP_OK) {
+        //     ESP_LOGI(TAG, "Modbus: Read Input OK");
+        // }
+        // vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
