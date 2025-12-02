@@ -76,7 +76,7 @@ app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
             break;
         case HSME_LOADING_COUNT_TIMER:
             loading_count++;
-            if (loading_count >= 100) {
+            if (loading_count > 100) {
                 HSM_Tran((HSM *)This, &app_state_main, NULL, NULL);
                 ESP_LOGI(TAG, "Loading Done, transitioning to Idle State");
             } else {
@@ -97,11 +97,37 @@ app_state_main_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
             ui_load_screen(ui_scrMain);
+            ui_show_slot_serial_detail(0);
             ESP_LOGI(TAG, "Entered Main State");
             break;
         case HSME_INIT:
             break;
         case HSME_EXIT:
+            break;
+        case HSME_MODBUS_GET_SLOT_1_DATA:
+            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_1);
+            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_1);
+            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_1);
+            break;
+        case HSME_MODBUS_GET_SLOT_2_DATA:
+            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_2);
+            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_2);
+            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_2);
+            break;
+        case HSME_MODBUS_GET_SLOT_3_DATA:
+            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_3);
+            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_3);
+            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_3);
+            break;
+        case HSME_MODBUS_GET_SLOT_4_DATA:
+            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_4);
+            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_4);
+            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_4);
+            break;
+        case HSME_MODBUS_GET_SLOT_5_DATA:
+            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_5);
+            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_5);
+            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_5);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
@@ -131,11 +157,24 @@ static HSM_EVENT
 app_state_main_slot_1_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
+            ui_set_button_color(ui_btMainSlot1, BTN_COLOR_ACTIVE);
+            ui_show_slot_serial_detail(1);
+            ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 1 Clicked");
             break;
         case HSME_INIT:
             break;
         case HSME_EXIT:
+            ui_set_button_color(ui_btMainSlot1, BTN_COLOR_NORMAL);
+            ui_show_slot_serial_detail(0);
+            ui_show_slot_detail_panel(false);
+            break;
+        case HSME_MODBUS_GET_SLOT_1_DATA:
+            ui_update_bms_state_value((DeviceHSM_t *)This, IDX_SLOT_1);
+            ui_update_ctrl_request_value((DeviceHSM_t *)This, IDX_SLOT_1);
+            ui_update_ctrl_response_value((DeviceHSM_t *)This, IDX_SLOT_1);
+            ui_update_fet_ctrl_pin_value((DeviceHSM_t *)This, IDX_SLOT_1);
+            ui_update_fet_status_value((DeviceHSM_t *)This, IDX_SLOT_1);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main, NULL, NULL);
@@ -151,6 +190,9 @@ app_state_main_slot_1_handler(HSM *This, HSM_EVENT event, void *param) {
             break;
         case HSME_MAIN_SLOT_5_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_5, NULL, NULL);
+            break;
+        case HSME_MAIN_MANUAL_SWAP_CLICKED:
+            modbus_master_write_single_register(APP_MODBUS_SLAVE_ID, 1000, 1);
             break;
         default:
             return event;
@@ -161,11 +203,17 @@ static HSM_EVENT
 app_state_main_slot_2_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
+            ui_set_button_color(ui_btMainSlot2, BTN_COLOR_ACTIVE);
+            ui_show_slot_serial_detail(2);
+            ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 2 Clicked");
             break;
         case HSME_INIT:
             break;
         case HSME_EXIT:
+            ui_set_button_color(ui_btMainSlot2, BTN_COLOR_NORMAL);
+            ui_show_slot_serial_detail(0);
+            ui_show_slot_detail_panel(false);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
@@ -181,6 +229,9 @@ app_state_main_slot_2_handler(HSM *This, HSM_EVENT event, void *param) {
             break;
         case HSME_MAIN_SLOT_5_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_5, NULL, NULL);
+            break;
+        case HSME_MAIN_MANUAL_SWAP_CLICKED:
+            modbus_master_write_single_register(APP_MODBUS_SLAVE_ID, 1001, 1);
             break;
         default:
             return event;
@@ -191,11 +242,17 @@ static HSM_EVENT
 app_state_main_slot_3_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
+            ui_set_button_color(ui_btMainSlot3, BTN_COLOR_ACTIVE);
+            ui_show_slot_serial_detail(3);
+            ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 3 Clicked");
             break;
         case HSME_INIT:
             break;
         case HSME_EXIT:
+            ui_set_button_color(ui_btMainSlot3, BTN_COLOR_NORMAL);
+            ui_show_slot_serial_detail(0);
+            ui_show_slot_detail_panel(false);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
@@ -211,6 +268,9 @@ app_state_main_slot_3_handler(HSM *This, HSM_EVENT event, void *param) {
             break;
         case HSME_MAIN_SLOT_5_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_5, NULL, NULL);
+            break;
+        case HSME_MAIN_MANUAL_SWAP_CLICKED:
+            modbus_master_write_single_register(APP_MODBUS_SLAVE_ID, 1002, 1);
             break;
         default:
             return event;
@@ -221,11 +281,17 @@ static HSM_EVENT
 app_state_main_slot_4_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
+            ui_set_button_color(ui_btMainSlot4, BTN_COLOR_ACTIVE);
+            ui_show_slot_serial_detail(4);
+            ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 4 Clicked");
             break;
         case HSME_INIT:
             break;
         case HSME_EXIT:
+            ui_set_button_color(ui_btMainSlot4, BTN_COLOR_NORMAL);
+            ui_show_slot_serial_detail(0);
+            ui_show_slot_detail_panel(false);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
@@ -242,6 +308,9 @@ app_state_main_slot_4_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_MAIN_SLOT_5_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_5, NULL, NULL);
             break;
+        case HSME_MAIN_MANUAL_SWAP_CLICKED:
+            modbus_master_write_single_register(APP_MODBUS_SLAVE_ID, 1003, 1);
+            break;
         default:
             return event;
     }
@@ -251,11 +320,17 @@ static HSM_EVENT
 app_state_main_slot_5_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
+            ui_set_button_color(ui_btMainSlot5, BTN_COLOR_ACTIVE);
+            ui_show_slot_serial_detail(5);
+            ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 5 Clicked");
             break;
         case HSME_INIT:
             break;
         case HSME_EXIT:
+            ui_set_button_color(ui_btMainSlot5, BTN_COLOR_NORMAL);
+            ui_show_slot_serial_detail(0);
+            ui_show_slot_detail_panel(false);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
@@ -271,6 +346,9 @@ app_state_main_slot_5_handler(HSM *This, HSM_EVENT event, void *param) {
             break;
         case HSME_MAIN_SLOT_5_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main, NULL, NULL);
+            break;
+        case HSME_MAIN_MANUAL_SWAP_CLICKED:
+            modbus_master_write_single_register(APP_MODBUS_SLAVE_ID, 1004, 1);
             break;
         default:
             return event;

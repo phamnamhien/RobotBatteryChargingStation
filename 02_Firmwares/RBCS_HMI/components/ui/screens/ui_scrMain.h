@@ -23,11 +23,11 @@ extern lv_obj_t * ui_imgMainSlotSerialDetail2;
 extern lv_obj_t * ui_imgMainSlotSerialDetail3;
 extern lv_obj_t * ui_imgMainSlotSerialDetail4;
 extern lv_obj_t * ui_imgMainSlotSerialDetail5;
-extern lv_obj_t * ui_ibtMainSlot1;
-extern lv_obj_t * ui_ibtMainSlot2;
-extern lv_obj_t * ui_ibtMainSlot3;
-extern lv_obj_t * ui_ibtMainSlot4;
-extern lv_obj_t * ui_ibtMainSlot5;
+extern lv_obj_t * ui_btMainSlot1;
+extern lv_obj_t * ui_btMainSlot2;
+extern lv_obj_t * ui_btMainSlot3;
+extern lv_obj_t * ui_btMainSlot4;
+extern lv_obj_t * ui_btMainSlot5;
 extern lv_obj_t * ui_imgMainEmptyBat1;
 extern lv_obj_t * ui_imgMainEmptyBat2;
 extern lv_obj_t * ui_imgMainEmptyBat3;
@@ -147,7 +147,7 @@ extern lv_obj_t * ui_imgMainRbToSlot3;
 extern lv_obj_t * ui_imgMainRbToSlot4;
 extern lv_obj_t * ui_imgMainRbToSlot5;
 extern lv_obj_t * ui_imgMainBattery;
-extern lv_obj_t * ui_Image18;
+extern lv_obj_t * ui_imgMainNotConnect;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

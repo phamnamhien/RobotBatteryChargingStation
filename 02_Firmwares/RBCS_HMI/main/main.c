@@ -66,21 +66,74 @@ void fnMainSlot5(lv_event_t * e)
     // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_MAIN_SLOT_5_CLICKED, NULL);
 }
+void fnMainManualSwap(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_MAIN_MANUAL_SWAP_CLICKED, NULL);
+} 
 // ============================================
 // Modbus Callbacks & Task
 // ============================================
 void modbus_data_received(uint8_t slave_addr, uint8_t reg_type, 
                           uint16_t reg_addr, uint16_t *data, uint16_t length)
 {
-    ESP_LOGI(TAG, "Modbus: Slave %d, type 0x%02X, addr %d", 
-             slave_addr, reg_type, reg_addr);
-    for (int i = 0; i < length; i++) {
-        ESP_LOGI(TAG, "  [%d] = %d", i, data[i]);
-    }
+    // ESP_LOGI(TAG, "Modbus: Slave %d, type 0x%02X, addr %d", 
+    //          slave_addr, reg_type, reg_addr);
+    // for (int i = 0; i < length; i++) {
+    //     ESP_LOGI(TAG, "  [%d] = %d", i, data[i]);
+    // }
     
     // Example: Update UI with Modbus data
     // ui_label_set_text_fmt(ui_LabelStatus, "Value: %d", data[0]);
 }
+static void modbus_battery_sync_data(DeviceHSM_t *me, uint16_t* dat, uint8_t slot_index) {
+    me->bms_data[slot_index].bms_state = dat[0];
+    me->bms_data[slot_index].ctrl_request = dat[1];
+    me->bms_data[slot_index].ctrl_response = dat[2];
+    me->bms_data[slot_index].fet_ctrl_pin = dat[3];
+    me->bms_data[slot_index].fet_status = dat[4];
+    me->bms_data[slot_index].alarm_bits = dat[5];
+    me->bms_data[slot_index].faults = dat[6];
+
+    me->bms_data[slot_index].pack_volt = dat[7];    
+    me->bms_data[slot_index].stack_volt = dat[8]; 
+    me->bms_data[slot_index].cell_volt[0] = dat[18]; 
+    me->bms_data[slot_index].cell_volt[1] = dat[19]; 
+    me->bms_data[slot_index].cell_volt[2] = dat[20]; 
+    me->bms_data[slot_index].cell_volt[3] = dat[21]; 
+    me->bms_data[slot_index].cell_volt[4] = dat[22]; 
+    me->bms_data[slot_index].cell_volt[5] = dat[23]; 
+    me->bms_data[slot_index].cell_volt[6] = dat[24]; 
+    me->bms_data[slot_index].cell_volt[7] = dat[25]; 
+    me->bms_data[slot_index].cell_volt[8] = dat[26]; 
+    me->bms_data[slot_index].cell_volt[9] = dat[27]; 
+    me->bms_data[slot_index].cell_volt[10] = dat[28]; 
+    me->bms_data[slot_index].cell_volt[11] = dat[29]; 
+    me->bms_data[slot_index].cell_volt[12] = dat[33]; 
+
+    me->bms_data[slot_index].ld_volt = dat[11]; 
+    me->bms_data[slot_index].pack_current = dat[9]<<16|dat[10];
+    me->bms_data[slot_index].temp1 = dat[12]<<16|dat[13];
+    me->bms_data[slot_index].temp2 = dat[12]<<16|dat[13];
+    me->bms_data[slot_index].temp3 = dat[14]<<16|dat[15];
+
+    me->bms_data[slot_index].capacity = dat[48];
+    me->bms_data[slot_index].soc_percent = dat[46];
+    me->bms_data[slot_index].soh_value = dat[47];
+    me->bms_data[slot_index].pin_percent = dat[43];
+    me->bms_data[slot_index].percent_target = dat[44];
+    me->bms_data[slot_index].safety_a = dat[34];
+    me->bms_data[slot_index].safety_b = dat[35];
+    me->bms_data[slot_index].safety_c = dat[36];
+
+    me->bms_data[slot_index].accu_int = dat[37]<<16|dat[38];
+    me->bms_data[slot_index].accu_frac = dat[39]<<16|dat[40];
+    me->bms_data[slot_index].accu_time = dat[41]<<16|dat[42];
+
+    me->bms_data[slot_index].cell_resistance = dat[45];
+    me->bms_data[slot_index].single_parallel = dat[49];
+}   
+
 
 void modbus_poll_task(void *arg)
 {
@@ -90,27 +143,37 @@ void modbus_poll_task(void *arg)
     ESP_LOGI(TAG, "Modbus polling task started");
 
     while (1) {
-        if (modbus_master_read_holding_registers(1, 0, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 0, 51, holding_regs) == ESP_OK) {
+            modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_1);
+            HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_1_DATA, NULL);
             ESP_LOGI(TAG, "Modbus: Read Holding 40001-40051 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(1, 100, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 100, 51, holding_regs) == ESP_OK) {
+            modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_2);
+            HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_2_DATA, NULL);
             ESP_LOGI(TAG, "Modbus: Read Holding 40101-40151 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(1, 200, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 200, 51, holding_regs) == ESP_OK) {
+            modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_3);
+            HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_3_DATA, NULL);
             ESP_LOGI(TAG, "Modbus: Read Holding 40201-40251 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(1, 300, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 300, 51, holding_regs) == ESP_OK) {
+            modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_4);
+            HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_4_DATA, NULL);
             ESP_LOGI(TAG, "Modbus: Read Holding 40301-40351 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(1, 400, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 400, 51, holding_regs) == ESP_OK) {
+            modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_5);
+            HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_5_DATA, NULL);
             ESP_LOGI(TAG, "Modbus: Read Holding 40401-40451 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(600));
@@ -481,15 +544,18 @@ void app_main(void)
         lv_obj_add_event_cb(ui_ibtSettingBackToMain, fnSettingBackToMain, 
                         LV_EVENT_CLICKED, NULL);
                         
-        lv_obj_add_event_cb(ui_ibtMainSlot1, fnMainSlot1, 
+        lv_obj_add_event_cb(ui_btMainSlot1, fnMainSlot1, 
                         LV_EVENT_CLICKED, NULL);
-        lv_obj_add_event_cb(ui_ibtMainSlot2, fnMainSlot2, 
+        lv_obj_add_event_cb(ui_btMainSlot2, fnMainSlot2, 
                         LV_EVENT_CLICKED, NULL);
-        lv_obj_add_event_cb(ui_ibtMainSlot3, fnMainSlot3, 
+        lv_obj_add_event_cb(ui_btMainSlot3, fnMainSlot3, 
                         LV_EVENT_CLICKED, NULL);
-        lv_obj_add_event_cb(ui_ibtMainSlot4, fnMainSlot4, 
+        lv_obj_add_event_cb(ui_btMainSlot4, fnMainSlot4, 
                         LV_EVENT_CLICKED, NULL);
-        lv_obj_add_event_cb(ui_ibtMainSlot5, fnMainSlot5, 
+        lv_obj_add_event_cb(ui_btMainSlot5, fnMainSlot5, 
+                        LV_EVENT_CLICKED, NULL);
+
+        lv_obj_add_event_cb(ui_ibtMainManualSwap, fnMainManualSwap, 
                         LV_EVENT_CLICKED, NULL);
         ui_unlock();
     }
@@ -508,7 +574,7 @@ void app_main(void)
                  modbus_cfg.tx_pin, modbus_cfg.rx_pin, modbus_cfg.rts_pin);
         
         // Create Modbus polling task
-        xTaskCreate(modbus_poll_task, "modbus_poll", 4096, NULL, 5, NULL);
+        xTaskCreate(modbus_poll_task, "modbus_poll", 4096, NULL, 4, NULL);
         ESP_LOGI(TAG, "      Modbus task created");
     } else {
         ESP_LOGE(TAG, "      Modbus FAILED: %s", esp_err_to_name(modbus_ret));

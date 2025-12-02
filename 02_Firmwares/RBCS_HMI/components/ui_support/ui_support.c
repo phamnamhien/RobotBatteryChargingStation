@@ -53,6 +53,7 @@ void ui_unlock(void)
 // Screen Management
 // ============================================
 
+// ui_support.c - Sửa hàm ui_load_screen
 bool ui_load_screen(lv_obj_t *screen)
 {
     if (screen == NULL) {
@@ -61,7 +62,7 @@ bool ui_load_screen(lv_obj_t *screen)
     }
     
     if (ui_lock(-1)) {
-        lv_disp_load_scr(screen);
+        lv_scr_load_anim(screen, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);  // ← Tắt animation
         ui_unlock();
         return true;
     }
@@ -309,5 +310,20 @@ bool ui_execute_callback(ui_callback_t callback, void *user_data)
     
     free(data);
     return false;
+}
+
+void ui_set_button_color(lv_obj_t *button, uint32_t color)
+{
+    if (button == NULL) {
+        ESP_LOGE(TAG, "Button is NULL");
+        return;
+    }
+    
+    if (ui_lock(-1)) {
+        lv_obj_set_style_bg_color(button, lv_color_hex(color), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_shadow_color(button, lv_color_hex(color), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_opa(button, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+        ui_unlock();
+    }
 }
 

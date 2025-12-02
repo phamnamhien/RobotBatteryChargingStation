@@ -56,12 +56,12 @@ typedef struct {
     uint16_t ld_volt;           // Load voltage in mV
     
     // Current Measurement
-    int16_t pack_current;       // Pack current in mA (signed)
+    int32_t pack_current;       // Pack current in mA (signed)
     
     // Temperature Sensors
-    int16_t temp1;              // Temperature sensor 1 in 0.1°C
-    int16_t temp2;              // Temperature sensor 2 in 0.1°C
-    int16_t temp3;              // Temperature sensor 3 in 0.1°C
+    int32_t temp1;              // Temperature sensor 1 in 0.1°C
+    int32_t temp2;              // Temperature sensor 2 in 0.1°C
+    int32_t temp3;              // Temperature sensor 3 in 0.1°C
     
     // Capacity & State of Charge
     uint16_t capacity;          // Battery capacity in mAh
@@ -91,6 +91,13 @@ typedef enum {
 
 	HSME_LOADING_DONE,
 
+    HSME_MODBUS_GET_SLOT_1_DATA,
+    HSME_MODBUS_GET_SLOT_2_DATA,
+    HSME_MODBUS_GET_SLOT_3_DATA,
+    HSME_MODBUS_GET_SLOT_4_DATA,
+    HSME_MODBUS_GET_SLOT_5_DATA,
+
+
     HSME_CHANGE_SCR_MAIN_TO_SETTING,
     HSME_CHANGE_SCR_SETTING_TO_MAIN,
     HSME_MAIN_SLOT_1_CLICKED,
@@ -98,6 +105,7 @@ typedef enum {
     HSME_MAIN_SLOT_3_CLICKED,
     HSME_MAIN_SLOT_4_CLICKED,
     HSME_MAIN_SLOT_5_CLICKED,
+    HSME_MAIN_MANUAL_SWAP_CLICKED,
 
 	HSME_LOADING_COUNT_TIMER,
 	HSME_BLINK_1S_TIMER,
@@ -109,10 +117,29 @@ typedef struct {
 	BMS_Data_t bms_data[BMS_BATTERY_NUM];
 } DeviceHSM_t;
 
-
+typedef enum {
+    IDX_SLOT_1 = 0,
+    IDX_SLOT_2,
+    IDX_SLOT_3,
+    IDX_SLOT_4,
+    IDX_SLOT_5,
+} SlotIndex_t;
 
 void app_state_hsm_init(DeviceHSM_t *me);
 
+
+void ui_update_main_slot_voltage(DeviceHSM_t *me, int8_t slot_index);
+void ui_update_main_battery_percent(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_main_slot_capacity(DeviceHSM_t *me, int8_t slot_index);
+
+void ui_show_slot_serial_detail(uint8_t slot_number);
+void ui_show_slot_detail_panel(bool show);
+
+void ui_update_bms_state_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_ctrl_request_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_ctrl_response_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_fet_ctrl_pin_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_fet_status_value(DeviceHSM_t *me, uint8_t slot_index);
 
 #ifdef __cplusplus
 }

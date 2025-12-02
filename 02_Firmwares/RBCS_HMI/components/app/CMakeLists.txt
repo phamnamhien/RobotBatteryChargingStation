@@ -1,6 +1,7 @@
 idf_component_register(
                     SRCS            "app_params.c"
                                     "app_states.c"
+                                    "app_ui_helpers.c"
                     INCLUDE_DIRS    "include"
                     REQUIRES        driver 
                                     nvs_flash

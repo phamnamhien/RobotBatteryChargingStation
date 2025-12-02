@@ -11,6 +11,15 @@
 
 #include <stdbool.h>
 #include "lvgl.h"
+#include "ui_support.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "esp_log.h"
+#include <stdarg.h>
+#include <stdio.h>
+
+#include "ui.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,13 +31,14 @@ extern "C" {
 #define LCD_V_RES                   480
 
 // LVGL Task Configuration
-#define LCD_LVGL_TICK_PERIOD_MS     2
-#define LCD_LVGL_TASK_MAX_DELAY_MS  50
+#define LCD_LVGL_TICK_PERIOD_MS     1
+#define LCD_LVGL_TASK_MAX_DELAY_MS  100
 #define LCD_LVGL_TASK_MIN_DELAY_MS  1
-#define LCD_LVGL_TASK_STACK_SIZE    (4 * 1024)
-#define LCD_LVGL_TASK_PRIORITY      2
+#define LCD_LVGL_TASK_STACK_SIZE    (16 * 1024)
+#define LCD_LVGL_TASK_PRIORITY      5
 
-
+#define BTN_COLOR_NORMAL 0xECECEC
+#define BTN_COLOR_ACTIVE 0xD5FFCD
 // ============================================
 // LVGL Thread Safety
 // ============================================
@@ -227,6 +237,21 @@ bool ui_execute_callback(ui_callback_t callback, void *user_data);
  * @return true if successful, false otherwise
  */
 bool ui_support_init(void *lvgl_mutex);
+
+/**
+ * @brief Set background color cho button bất kỳ
+ * 
+ * @param button Pointer đến button object (ui_btMainSlot1 -> ui_btMainSlot5)
+ * @param color Mã màu HEX (ví dụ: 0xFF0000 cho đỏ)
+ */
+void ui_set_button_color(lv_obj_t *button, uint32_t color);
+
+/**
+ * @brief Hiển thị slot serial detail
+ * 
+ * @param slot_number 0 = tắt tất cả, 1-5 = hiển thị slot tương ứng (ẩn các slot khác)
+ */
+
 
 #ifdef __cplusplus
 }
