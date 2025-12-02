@@ -15,7 +15,7 @@ modbus_master_config_t modbus_cfg = {
     .tx_pin = APP_IO_UART_TX_PIN,
     .rx_pin = APP_IO_UART_RX_PIN,
     .rts_pin = APP_IO_UART_RTS_PIN,
-    .baudrate = 9600,
+    .baudrate = 115200,
 };
 
 // ============================================
@@ -25,35 +25,47 @@ static SemaphoreHandle_t lvgl_mux = NULL;
 static SemaphoreHandle_t sem_vsync_end;
 static SemaphoreHandle_t sem_gui_ready;
 
+static esp_lcd_touch_handle_t touch_handle = NULL;
 // ============================================
 // SquareLine UI Event Handler
 // ============================================
-// static uint8_t pic_num = 1;
+// Callback function
+static void fnMainSetting(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_CHANGE_SCR_MAIN_TO_SETTING, NULL);
+}
+void fnSettingBackToMain(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_CHANGE_SCR_SETTING_TO_MAIN, NULL);
+}
 
-// static void screen_img_num4event_handler(lv_event_t *e)
-// {
-//     lv_event_code_t code = lv_event_get_code(e);
-    
-//     if (code == LV_EVENT_CLICKED) {
-//         pic_num++;
-//         if (pic_num == 6) pic_num = 1;
-        
-//         switch (pic_num) {
-//             // case 1:
-//             //     ui_image_set_src(ui_Image4, &ui_img_scrmain_batteryempty_png);
-//             //     break;
-//             // case 2:
-//             //     ui_image_set_src(ui_Image4, &ui_img_scrsettingicon_png);
-//             //     break;
-//             // case 3:
-//             //     ui_image_set_src(ui_Image4, &ui_img_imgsplashbackground_png);
-//             //     break;
-//             default:
-//                 break;
-//         }
-//     }
-// }
-
+void fnMainSlot1(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_MAIN_SLOT_1_CLICKED, NULL);
+}
+void fnMainSlot2(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_MAIN_SLOT_2_CLICKED, NULL);
+}
+void fnMainSlot3(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_MAIN_SLOT_3_CLICKED, NULL);
+}
+void fnMainSlot4(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_MAIN_SLOT_4_CLICKED, NULL);
+}
+void fnMainSlot5(lv_event_t * e)
+{
+    // lv_obj_t * btn = lv_event_get_target(e);
+    HSM_Run((HSM *)&device, HSME_MAIN_SLOT_5_CLICKED, NULL);
+}
 // ============================================
 // Modbus Callbacks & Task
 // ============================================
@@ -140,7 +152,28 @@ static void lcd_increase_lvgl_tick(void *arg)
 {
     lv_tick_inc(LCD_LVGL_TICK_PERIOD_MS);
 }
+static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
+{
+    uint16_t touchpad_x[1] = {0};
+    uint16_t touchpad_y[1] = {0};
+    uint8_t touchpad_cnt = 0;
 
+    esp_lcd_touch_read_data(drv->user_data);
+
+    bool touchpad_pressed = esp_lcd_touch_get_coordinates(drv->user_data, 
+                                touchpad_x, touchpad_y, NULL, &touchpad_cnt, 1);
+
+    if (touchpad_pressed && touchpad_cnt > 0) {
+        data->point.x = touchpad_x[0];
+        data->point.y = touchpad_y[0];
+        data->state = LV_INDEV_STATE_PR;
+        
+        // // Debug log
+        // ESP_LOGI(TAG, "Touch: x=%d, y=%d", touchpad_x[0], touchpad_y[0]);
+    } else {
+        data->state = LV_INDEV_STATE_REL;
+    }
+}
 // ============================================
 // LVGL Port Task
 // ============================================
@@ -192,65 +225,84 @@ static esp_err_t i2c_master_init(void)
 // ============================================
 // Touch Controller Initialization
 // ============================================
-static esp_err_t touch_controller_init(void)
+// ============================================
+// Touch Controller Initialization
+// ============================================
+static esp_err_t touch_controller_init(esp_lcd_touch_handle_t *tp_out)  // ← Sửa
 {
     ESP_LOGI(TAG, "Initializing GT911 touch controller...");
     
-    // Reset I2C bus
-    i2c_driver_delete(I2C_MASTER_NUM);
-    vTaskDelay(pdMS_TO_TICKS(50));
-    ESP_ERROR_CHECK(i2c_master_init());
+    // 1. Init GPIO 4 for INT control
+    gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .pin_bit_mask = (1ULL << GPIO_INPUT_IO_4),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = 0,
+        .pull_down_en = 0,
+    };
+    gpio_config(&io_conf);
+    vTaskDelay(pdMS_TO_TICKS(10));
     
-    // Delay for touch IC boot
-    vTaskDelay(pdMS_TO_TICKS(200));
-    
-    // Retry logic for stable initialization
-    esp_lcd_panel_io_handle_t tp_io_handle = NULL;
-    esp_lcd_touch_handle_t tp = NULL;
-    int retry = 0;
-    const int max_retry = 3;
-    
-    while (retry < max_retry && tp == NULL) {
-        if (retry > 0) {
-            ESP_LOGW(TAG, "  Touch retry #%d...", retry);
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
-        
-        esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
-        esp_err_t tp_io_ret = esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)I2C_MASTER_NUM, 
-                                                        &tp_io_config, &tp_io_handle);
-        
-        if (tp_io_ret == ESP_OK) {
-            esp_lcd_touch_config_t tp_cfg = {
-                .x_max = LCD_H_RES,
-                .y_max = LCD_V_RES,
-                .rst_gpio_num = GPIO_NUM_NC,
-                .int_gpio_num = GPIO_INPUT_IO_4,
-                .levels = {
-                    .reset = 0,
-                    .interrupt = 0,
-                },
-                .flags = {
-                    .swap_xy = 0,
-                    .mirror_x = 0,
-                    .mirror_y = 0,
-                },
-            };
-            
-            esp_err_t touch_ret = esp_lcd_touch_new_i2c_gt911(tp_io_handle, &tp_cfg, &tp);
-            
-            if (touch_ret == ESP_OK) {
-                ESP_LOGI(TAG, "  GT911 OK after %d retries!", retry);
-                return ESP_OK;
-            }
-        }
-        retry++;
+    // 2. Enable I/O expander 0x24
+    uint8_t write_buf = 0x01;
+    esp_err_t ret = i2c_master_write_to_device(I2C_MASTER_NUM, 0x24, &write_buf, 1, 
+                               I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "I/O expander 0x24 not responding: %s", esp_err_to_name(ret));
     }
     
-    ESP_LOGW(TAG, "  GT911 failed after %d retries - Touch disabled", max_retry);
-    return ESP_FAIL;
+    // 3. GT911 reset sequence via 0x38
+    write_buf = 0x2C;
+    ret = i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1,
+                               I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Touch reset controller 0x38 not responding: %s", esp_err_to_name(ret));
+    }
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
+    gpio_set_level(GPIO_INPUT_IO_4, 0);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
+    write_buf = 0x2E;
+    i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1,
+                               I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    
+    // 4. Init touch controller
+    esp_lcd_panel_io_handle_t tp_io_handle = NULL;
+    esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG();
+    
+    ret = esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)I2C_MASTER_NUM, 
+                                    &tp_io_config, &tp_io_handle);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to create touch panel I/O: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    esp_lcd_touch_config_t tp_cfg = {
+        .x_max = LCD_V_RES,  
+        .y_max = LCD_H_RES,
+        .rst_gpio_num = GPIO_NUM_NC,
+        .int_gpio_num = GPIO_NUM_NC,
+        .flags = {
+            .swap_xy = 0,
+            .mirror_x = 0,
+            .mirror_y = 0,
+        },
+    };
+    
+    esp_lcd_touch_handle_t tp = NULL;
+    ret = esp_lcd_touch_new_i2c_gt911(tp_io_handle, &tp_cfg, &tp);
+    
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init GT911: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    
+    *tp_out = tp;  // ← Return touch handle
+    ESP_LOGI(TAG, "GT911 initialized successfully");
+    return ESP_OK;
 }
-
 // ============================================
 // Main Application
 // ============================================
@@ -375,8 +427,16 @@ void app_main(void)
     // STEP 6: Initialize Touch Controller
     // ========================================
     ESP_LOGI(TAG, "[6/7] Initializing touch controller...");
-    esp_err_t touch_ret = touch_controller_init();
+    esp_err_t touch_ret = touch_controller_init(&touch_handle);  
     if (touch_ret == ESP_OK) {
+        // Đăng ký touch input với LVGL
+        static lv_indev_drv_t indev_drv;
+        lv_indev_drv_init(&indev_drv);
+        indev_drv.type = LV_INDEV_TYPE_POINTER;
+        indev_drv.read_cb = lvgl_touch_cb;
+        indev_drv.user_data = touch_handle;
+        lv_indev_drv_register(&indev_drv);
+        
         ESP_LOGI(TAG, "      Touch controller initialized");
     } else {
         ESP_LOGW(TAG, "      Touch controller disabled");
@@ -416,7 +476,21 @@ void app_main(void)
     ESP_LOGI(TAG, "Initializing SquareLine UI...");
     if (ui_lock(-1)) {
         ui_init();
-        // lv_obj_add_event_cb(ui_Image4, screen_img_num4event_handler, LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(ui_ibtMainToSetting, fnMainSetting, 
+                        LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(ui_ibtSettingBackToMain, fnSettingBackToMain, 
+                        LV_EVENT_CLICKED, NULL);
+                        
+        lv_obj_add_event_cb(ui_ibtMainSlot1, fnMainSlot1, 
+                        LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(ui_ibtMainSlot2, fnMainSlot2, 
+                        LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(ui_ibtMainSlot3, fnMainSlot3, 
+                        LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(ui_ibtMainSlot4, fnMainSlot4, 
+                        LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(ui_ibtMainSlot5, fnMainSlot5, 
+                        LV_EVENT_CLICKED, NULL);
         ui_unlock();
     }
     ESP_LOGI(TAG, "      SquareLine UI initialized");

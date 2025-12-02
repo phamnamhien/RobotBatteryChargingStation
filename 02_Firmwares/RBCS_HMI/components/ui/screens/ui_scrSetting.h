@@ -3,21 +3,21 @@
 // LVGL version: 8.3.11
 // Project name: SQUARELINE_RBCS_HMI
 
-#ifndef UI_SCREEN4_H
-#define UI_SCREEN4_H
+#ifndef UI_SCRSETTING_H
+#define UI_SCRSETTING_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// SCREEN: ui_Screen4
-extern void ui_Screen4_screen_init(void);
-extern void ui_Screen4_screen_destroy(void);
-extern lv_obj_t * ui_Screen4;
+// SCREEN: ui_scrSetting
+extern void ui_scrSetting_screen_init(void);
+extern void ui_scrSetting_screen_destroy(void);
+extern lv_obj_t * ui_scrSetting;
 extern lv_obj_t * ui_imgSettingBackground;
-extern lv_obj_t * ui_imgSettingBackIcon;
 extern lv_obj_t * ui_lbSettingTitle;
-extern lv_obj_t * ui_btnSettingBack;
+extern void ui_event_ibtSettingBackToMain(lv_event_t * e);
+extern lv_obj_t * ui_ibtSettingBackToMain;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus
