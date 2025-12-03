@@ -6,6 +6,15 @@
 static const char *TAG = "RBCS_HMI";
 
 // ============================================
+// Configuration from Kconfig
+// ============================================
+#if CONFIG_HMI_DOUBLE_FB
+#define HMI_LCD_NUM_FB             2
+#else
+#define HMI_LCD_NUM_FB             1
+#endif
+
+// ============================================
 // Modbus & HSM Variables
 // ============================================
 DeviceHSM_t device;
@@ -22,71 +31,68 @@ modbus_master_config_t modbus_cfg = {
 // Global Variables
 // ============================================
 static SemaphoreHandle_t lvgl_mux = NULL;
+static esp_lcd_touch_handle_t touch_handle = NULL;
+
+// ✅ Semaphores for VSYNC synchronization (Waveshare style)
+#if CONFIG_HMI_AVOID_TEAR_EFFECT_WITH_SEM
 static SemaphoreHandle_t sem_vsync_end;
 static SemaphoreHandle_t sem_gui_ready;
+#endif
 
-static esp_lcd_touch_handle_t touch_handle = NULL;
 // ============================================
-// SquareLine UI Event Handler
+// SquareLine UI Event Handlers
 // ============================================
-// Callback function
 static void fnMainSetting(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_CHANGE_SCR_MAIN_TO_SETTING, NULL);
 }
+
 void fnSettingBackToMain(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_CHANGE_SCR_SETTING_TO_MAIN, NULL);
 }
 
 void fnMainSlot1(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_MAIN_SLOT_1_CLICKED, NULL);
 }
+
 void fnMainSlot2(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_MAIN_SLOT_2_CLICKED, NULL);
 }
+
 void fnMainSlot3(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_MAIN_SLOT_3_CLICKED, NULL);
 }
+
 void fnMainSlot4(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_MAIN_SLOT_4_CLICKED, NULL);
 }
+
 void fnMainSlot5(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_MAIN_SLOT_5_CLICKED, NULL);
 }
+
 void fnMainManualSwap(lv_event_t * e)
 {
-    // lv_obj_t * btn = lv_event_get_target(e);
     HSM_Run((HSM *)&device, HSME_MAIN_MANUAL_SWAP_CLICKED, NULL);
-} 
+}
+
 // ============================================
 // Modbus Callbacks & Task
 // ============================================
 void modbus_data_received(uint8_t slave_addr, uint8_t reg_type, 
                           uint16_t reg_addr, uint16_t *data, uint16_t length)
 {
-    // ESP_LOGI(TAG, "Modbus: Slave %d, type 0x%02X, addr %d", 
-    //          slave_addr, reg_type, reg_addr);
-    // for (int i = 0; i < length; i++) {
-    //     ESP_LOGI(TAG, "  [%d] = %d", i, data[i]);
-    // }
-    
-    // Example: Update UI with Modbus data
-    // ui_label_set_text_fmt(ui_LabelStatus, "Value: %d", data[0]);
+    // Callback for debugging if needed
 }
-static void modbus_battery_sync_data(DeviceHSM_t *me, uint16_t* dat, uint8_t slot_index) {
+
+static void modbus_battery_sync_data(DeviceHSM_t *me, uint16_t* dat, uint8_t slot_index) 
+{
     me->bms_data[slot_index].bms_state = dat[0];
     me->bms_data[slot_index].ctrl_request = dat[1];
     me->bms_data[slot_index].ctrl_response = dat[2];
@@ -132,14 +138,11 @@ static void modbus_battery_sync_data(DeviceHSM_t *me, uint16_t* dat, uint8_t slo
 
     me->bms_data[slot_index].cell_resistance = dat[45];
     me->bms_data[slot_index].single_parallel = dat[49];
-}   
-
+}
 
 void modbus_poll_task(void *arg)
 {
     uint16_t holding_regs[60];
-    // uint16_t input_regs[60];
-    
     ESP_LOGI(TAG, "Modbus polling task started");
 
     while (1) {
@@ -172,36 +175,44 @@ void modbus_poll_task(void *arg)
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_5_DATA, NULL);
         }
         vTaskDelay(pdMS_TO_TICKS(600));
-        // if (modbus_master_read_input_registers(1, 0, 51, input_regs) == ESP_OK) {
-        //     ESP_LOGI(TAG, "Modbus: Read Input OK");
-        // }
-        // vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
 // ============================================
-// LCD & LVGL Callbacks
+// LCD & LVGL Callbacks (Waveshare Style)
 // ============================================
 static bool lcd_on_vsync_event(esp_lcd_panel_handle_t panel, 
                                const esp_lcd_rgb_panel_event_data_t *event_data, 
                                void *user_data)
 {
     BaseType_t high_task_awoken = pdFALSE;
-    xSemaphoreGiveFromISR(sem_vsync_end, &high_task_awoken);
+#if CONFIG_HMI_AVOID_TEAR_EFFECT_WITH_SEM
+    // ✅ CHỈ give sem_vsync_end KHI gui_ready đã được set
+    if (xSemaphoreTakeFromISR(sem_gui_ready, &high_task_awoken) == pdTRUE) {
+        xSemaphoreGiveFromISR(sem_vsync_end, &high_task_awoken);
+    }
+#endif
     return high_task_awoken == pdTRUE;
 }
 
 static void lcd_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
     esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t)drv->user_data;
+    int offsetx1 = area->x1;
+    int offsety1 = area->y1;
+    int offsetx2 = area->x2;
+    int offsety2 = area->y2;
     
-    // Đợi VSYNC để tránh tearing
+#if CONFIG_HMI_AVOID_TEAR_EFFECT_WITH_SEM
+    // ✅ BÁO GUI đã sẵn sàng
+    xSemaphoreGive(sem_gui_ready);
+    // ✅ ĐỢI VSYNC xác nhận
     xSemaphoreTake(sem_vsync_end, portMAX_DELAY);
+#endif
     
-    esp_lcd_panel_draw_bitmap(panel_handle, 
-                              area->x1, area->y1, 
-                              area->x2 + 1, area->y2 + 1, 
-                              color_map);
+    // Vẽ bitmap
+    esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, 
+                              offsetx2 + 1, offsety2 + 1, color_map);
     
     lv_disp_flush_ready(drv);
 }
@@ -210,6 +221,7 @@ static void lcd_increase_lvgl_tick(void *arg)
 {
     lv_tick_inc(LCD_LVGL_TICK_PERIOD_MS);
 }
+
 static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     uint16_t touchpad_x[1] = {0};
@@ -225,13 +237,11 @@ static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
         data->point.x = touchpad_x[0];
         data->point.y = touchpad_y[0];
         data->state = LV_INDEV_STATE_PR;
-        
-        // // Debug log
-        // ESP_LOGI(TAG, "Touch: x=%d, y=%d", touchpad_x[0], touchpad_y[0]);
     } else {
         data->state = LV_INDEV_STATE_REL;
     }
 }
+
 // ============================================
 // LVGL Port Task
 // ============================================
@@ -283,10 +293,7 @@ static esp_err_t i2c_master_init(void)
 // ============================================
 // Touch Controller Initialization
 // ============================================
-// ============================================
-// Touch Controller Initialization
-// ============================================
-static esp_err_t touch_controller_init(esp_lcd_touch_handle_t *tp_out)  // ← Sửa
+static esp_err_t touch_controller_init(esp_lcd_touch_handle_t *tp_out)
 {
     ESP_LOGI(TAG, "Initializing GT911 touch controller...");
     
@@ -357,66 +364,56 @@ static esp_err_t touch_controller_init(esp_lcd_touch_handle_t *tp_out)  // ← S
         return ret;
     }
     
-    *tp_out = tp;  // ← Return touch handle
+    *tp_out = tp;
     ESP_LOGI(TAG, "GT911 initialized successfully");
     return ESP_OK;
 }
+
 // ============================================
 // Main Application
 // ============================================
 void app_main(void)
 {
+    static lv_disp_draw_buf_t disp_buf;
+    static lv_disp_drv_t disp_drv;
+
     ESP_LOGI(TAG, "===========================================");
     ESP_LOGI(TAG, "  RBCS HMI - Battery Charging Station");
     ESP_LOGI(TAG, "===========================================");
 
+#if CONFIG_HMI_AVOID_TEAR_EFFECT_WITH_SEM
     // ========================================
-    // STEP 1: Initialize I2C
+    // STEP 1: Create Semaphores
     // ========================================
-    ESP_LOGI(TAG, "[1/7] Initializing I2C...");
+    ESP_LOGI(TAG, "[1/9] Creating synchronization semaphores...");
+    sem_vsync_end = xSemaphoreCreateBinary();
+    assert(sem_vsync_end);
+    sem_gui_ready = xSemaphoreCreateBinary();
+    assert(sem_gui_ready);
+    ESP_LOGI(TAG, "      Semaphores created for tear effect avoidance");
+#else
+    ESP_LOGI(TAG, "[1/9] Skipping semaphores (tear effect avoidance disabled)");
+#endif
+
+    // ========================================
+    // STEP 2: Initialize I2C
+    // ========================================
+    ESP_LOGI(TAG, "[2/9] Initializing I2C...");
     ESP_ERROR_CHECK(i2c_master_init());
     ESP_LOGI(TAG, "      I2C initialized");
 
     // ========================================
-    // STEP 2: Initialize LVGL
+    // STEP 3: Install RGB LCD Panel
     // ========================================
-    ESP_LOGI(TAG, "[2/7] Initializing LVGL...");
-    lv_init();
-    ESP_LOGI(TAG, "      LVGL initialized");
-
-    // ========================================
-    // STEP 3: Allocate Display Buffers
-    // ========================================
-    ESP_LOGI(TAG, "[3/7] Allocating LVGL draw buffers...");
-    static lv_disp_draw_buf_t disp_buf;
-    // void *buf1 = NULL;
-    // void *buf2 = NULL;
-    // size_t buffer_size = LCD_H_RES * LCD_V_RES * sizeof(lv_color_t);
-    
-    // buf1 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
-    // buf2 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
-    // assert(buf1 && buf2);
-    
-    // lv_disp_draw_buf_init(&disp_buf, buf1, buf2, LCD_H_RES * LCD_V_RES);
-    // ESP_LOGI(TAG, "      Double buffering: %d bytes x2", buffer_size);
-    void *buf1 = NULL;
-    size_t buffer_size = LCD_H_RES * LCD_V_RES * sizeof(lv_color_t);
-
-    buf1 = heap_caps_malloc(buffer_size, MALLOC_CAP_SPIRAM);
-    assert(buf1);
-
-    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, LCD_H_RES * LCD_V_RES);
-    ESP_LOGI(TAG, "      Single buffering: %d bytes", buffer_size);
-    // ========================================
-    // STEP 4: Initialize RGB LCD Panel
-    // ========================================
-    ESP_LOGI(TAG, "[4/7] Installing RGB LCD panel...");
+    ESP_LOGI(TAG, "[3/9] Installing RGB LCD panel driver...");
     esp_lcd_panel_handle_t panel_handle = NULL;
     esp_lcd_rgb_panel_config_t panel_config = {
         .data_width = 16,
         .psram_trans_align = 64,
-        .num_fbs = LCD_NUM_FB,
+        .num_fbs = HMI_LCD_NUM_FB,
+#if CONFIG_HMI_USE_BOUNCE_BUFFER
         .bounce_buffer_size_px = 10 * LCD_H_RES,
+#endif
         .clk_src = LCD_CLK_SRC_DEFAULT,
         .disp_gpio_num = LCD_PIN_NUM_DISP_EN,
         .pclk_gpio_num = LCD_PIN_NUM_PCLK,
@@ -444,68 +441,92 @@ void app_main(void)
             .flags.pclk_active_neg = true,
         },
         .flags.fb_in_psram = true,
-        .flags.double_fb = false,
     };
     
     ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&panel_config, &panel_handle));
+    ESP_LOGI(TAG, "      RGB panel created (num_fbs=%d)", HMI_LCD_NUM_FB);
 
-    // Create semaphores for tear effect avoidance
-    sem_vsync_end = xSemaphoreCreateBinary();
-    assert(sem_vsync_end);
-    sem_gui_ready = xSemaphoreCreateBinary();
-    assert(sem_gui_ready);
-
-    // Register VSYNC callback
+    // ========================================
+    // STEP 4: Register VSYNC Callback
+    // ========================================
+    ESP_LOGI(TAG, "[4/9] Registering VSYNC event callbacks...");
     esp_lcd_rgb_panel_event_callbacks_t cbs = {
         .on_vsync = lcd_on_vsync_event,
     };
-    ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, NULL));
+    ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, &disp_drv));
+    ESP_LOGI(TAG, "      VSYNC callback registered");
 
-    // Initialize the LCD panel
+    // ========================================
+    // STEP 5: Initialize RGB LCD Panel
+    // ========================================
+    ESP_LOGI(TAG, "[5/9] Initializing RGB LCD panel...");
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
     ESP_LOGI(TAG, "      RGB LCD panel initialized");
 
     // ========================================
-    // STEP 5: Register LVGL Display Driver
+    // STEP 6: Initialize LVGL
     // ========================================
-    ESP_LOGI(TAG, "[5/7] Registering LVGL display driver...");
-    static lv_disp_drv_t disp_drv;
+    ESP_LOGI(TAG, "[6/9] Initializing LVGL library...");
+    lv_init();
+    
+    void *buf1 = NULL;
+    void *buf2 = NULL;
+    
+#if CONFIG_HMI_DOUBLE_FB
+    ESP_LOGI(TAG, "      Using frame buffers as LVGL draw buffers");
+    ESP_ERROR_CHECK(esp_lcd_rgb_panel_get_frame_buffer(panel_handle, 2, &buf1, &buf2));
+    lv_disp_draw_buf_init(&disp_buf, buf1, buf2, LCD_H_RES * LCD_V_RES);
+#else
+    ESP_LOGI(TAG, "      Allocating separate LVGL draw buffers from PSRAM");
+    buf1 = heap_caps_malloc(LCD_H_RES * 100 * sizeof(lv_color_t), MALLOC_CAP_SPIRAM);
+    assert(buf1);
+    lv_disp_draw_buf_init(&disp_buf, buf1, buf2, LCD_H_RES * 100);
+#endif
+    ESP_LOGI(TAG, "      LVGL initialized");
+
+    // ========================================
+    // STEP 7: Register Display Driver
+    // ========================================
+    ESP_LOGI(TAG, "[7/9] Registering display driver to LVGL...");
     lv_disp_drv_init(&disp_drv);
     disp_drv.hor_res = LCD_H_RES;
     disp_drv.ver_res = LCD_V_RES;
     disp_drv.flush_cb = lcd_lvgl_flush_cb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
-    disp_drv.full_refresh = false;
-    lv_disp_drv_register(&disp_drv);
+#if CONFIG_HMI_DOUBLE_FB
+    disp_drv.full_refresh = true;
+    ESP_LOGI(TAG, "      Full refresh mode enabled (double buffer)");
+#endif
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
     ESP_LOGI(TAG, "      Display driver registered (%dx%d)", LCD_H_RES, LCD_V_RES);
 
     // ========================================
-    // STEP 6: Initialize Touch Controller
+    // STEP 8: Initialize Touch Controller
     // ========================================
-    ESP_LOGI(TAG, "[6/7] Initializing touch controller...");
-    esp_err_t touch_ret = touch_controller_init(&touch_handle);  
+    ESP_LOGI(TAG, "[8/9] Initializing touch controller...");
+    esp_err_t touch_ret = touch_controller_init(&touch_handle);
+    
     if (touch_ret == ESP_OK) {
-        // Đăng ký touch input với LVGL
         static lv_indev_drv_t indev_drv;
         lv_indev_drv_init(&indev_drv);
         indev_drv.type = LV_INDEV_TYPE_POINTER;
+        indev_drv.disp = disp;
         indev_drv.read_cb = lvgl_touch_cb;
         indev_drv.user_data = touch_handle;
         lv_indev_drv_register(&indev_drv);
-        
         ESP_LOGI(TAG, "      Touch controller initialized");
     } else {
         ESP_LOGW(TAG, "      Touch controller disabled");
     }
 
     // ========================================
-    // STEP 7: Create LVGL Infrastructure
+    // STEP 9: Create LVGL Infrastructure
     // ========================================
-    ESP_LOGI(TAG, "[7/7] Creating LVGL infrastructure...");
+    ESP_LOGI(TAG, "[9/9] Creating LVGL infrastructure...");
     
-    // Create LVGL tick timer
+    // LVGL tick timer
     const esp_timer_create_args_t lvgl_tick_timer_args = {
         .callback = &lcd_increase_lvgl_tick,
         .name = "lvgl_tick"
@@ -514,19 +535,16 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, LCD_LVGL_TICK_PERIOD_MS * 1000));
 
-    // Create LVGL mutex
+    // LVGL mutex
     lvgl_mux = xSemaphoreCreateRecursiveMutex();
     assert(lvgl_mux);
-
-    // Initialize UI Support Library
-    ESP_LOGI(TAG, "      Initializing UI Support...");
     ui_support_init(lvgl_mux);
 
-    // Create LVGL task
+    // LVGL task
     xTaskCreate(lcd_lvgl_port_task, "LVGL", 
                 LCD_LVGL_TASK_STACK_SIZE, NULL, 
                 LCD_LVGL_TASK_PRIORITY, NULL);
-    ESP_LOGI(TAG, "      LVGL task created");
+    ESP_LOGI(TAG, "      LVGL infrastructure created");
 
     // ========================================
     // Initialize SquareLine UI
@@ -534,11 +552,12 @@ void app_main(void)
     ESP_LOGI(TAG, "Initializing SquareLine UI...");
     if (ui_lock(-1)) {
         ui_init();
+        
+        // Register event callbacks
         lv_obj_add_event_cb(ui_ibtMainToSetting, fnMainSetting, 
                         LV_EVENT_CLICKED, NULL);
         lv_obj_add_event_cb(ui_ibtSettingBackToMain, fnSettingBackToMain, 
                         LV_EVENT_CLICKED, NULL);
-                        
         lv_obj_add_event_cb(ui_btMainSlot1, fnMainSlot1, 
                         LV_EVENT_CLICKED, NULL);
         lv_obj_add_event_cb(ui_btMainSlot2, fnMainSlot2, 
@@ -549,9 +568,9 @@ void app_main(void)
                         LV_EVENT_CLICKED, NULL);
         lv_obj_add_event_cb(ui_btMainSlot5, fnMainSlot5, 
                         LV_EVENT_CLICKED, NULL);
-
         lv_obj_add_event_cb(ui_ibtMainManualSwap, fnMainManualSwap, 
                         LV_EVENT_CLICKED, NULL);
+        
         ui_unlock();
     }
     ESP_LOGI(TAG, "      SquareLine UI initialized");
@@ -568,7 +587,6 @@ void app_main(void)
         ESP_LOGI(TAG, "      Pins: TX=%d RX=%d RTS=%d", 
                  modbus_cfg.tx_pin, modbus_cfg.rx_pin, modbus_cfg.rts_pin);
         
-        // Create Modbus polling task
         xTaskCreate(modbus_poll_task, "modbus_poll", 4096, NULL, 4, NULL);
         ESP_LOGI(TAG, "      Modbus task created");
     } else {
@@ -589,10 +607,24 @@ void app_main(void)
     ESP_LOGI(TAG, "===========================================");
     ESP_LOGI(TAG, "  ✓ System Startup Completed!");
     ESP_LOGI(TAG, "===========================================");
-    ESP_LOGI(TAG, "  LCD:    800x480 RGB (Double Buffer)");
+    
+#if CONFIG_HMI_DOUBLE_FB
+    ESP_LOGI(TAG, "  LCD:    %dx%d RGB (Double Buffer)", LCD_H_RES, LCD_V_RES);
+#else
+    ESP_LOGI(TAG, "  LCD:    %dx%d RGB (Single Buffer)", LCD_H_RES, LCD_V_RES);
+#endif
+    
     ESP_LOGI(TAG, "  Touch:  %s", touch_ret == ESP_OK ? "GT911 Active" : "Disabled");
     ESP_LOGI(TAG, "  Modbus: %s", modbus_ret == ESP_OK ? "Active" : "Disabled");
     ESP_LOGI(TAG, "  HSM:    Running");
+    
+#if CONFIG_HMI_AVOID_TEAR_EFFECT_WITH_SEM
+    ESP_LOGI(TAG, "  Sync:   Semaphore-based VSYNC");
+#endif
+#if CONFIG_HMI_USE_BOUNCE_BUFFER
+    ESP_LOGI(TAG, "  Buffer: Bounce buffer enabled");
+#endif
+    
     ESP_LOGI(TAG, "-------------------------------------------");
     ESP_LOGI(TAG, "  Free heap:  %lu bytes", esp_get_free_heap_size());
     ESP_LOGI(TAG, "  Free PSRAM: %lu bytes", heap_caps_get_free_size(MALLOC_CAP_SPIRAM));

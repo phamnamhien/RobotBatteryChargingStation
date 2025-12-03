@@ -596,10 +596,12 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# Example Configuration
+# HMI Configuration
 #
-CONFIG_EXAMPLE_DOUBLE_FB=y
-# end of Example Configuration
+# CONFIG_HMI_DOUBLE_FB is not set
+# CONFIG_HMI_USE_BOUNCE_BUFFER is not set
+CONFIG_HMI_AVOID_TEAR_EFFECT_WITH_SEM=y
+# end of HMI Configuration
 
 #
 # Compiler options
