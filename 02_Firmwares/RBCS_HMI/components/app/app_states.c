@@ -170,11 +170,7 @@ app_state_main_slot_1_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_show_slot_detail_panel(false);
             break;
         case HSME_MODBUS_GET_SLOT_1_DATA:
-            ui_update_bms_state_value((DeviceHSM_t *)This, IDX_SLOT_1);
-            ui_update_ctrl_request_value((DeviceHSM_t *)This, IDX_SLOT_1);
-            ui_update_ctrl_response_value((DeviceHSM_t *)This, IDX_SLOT_1);
-            ui_update_fet_ctrl_pin_value((DeviceHSM_t *)This, IDX_SLOT_1);
-            ui_update_fet_status_value((DeviceHSM_t *)This, IDX_SLOT_1);
+            ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_1);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main, NULL, NULL);
@@ -215,6 +211,9 @@ app_state_main_slot_2_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_show_slot_serial_detail(0);
             ui_show_slot_detail_panel(false);
             break;
+        case HSME_MODBUS_GET_SLOT_2_DATA:
+            ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_2);
+            break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
             break;
@@ -253,6 +252,9 @@ app_state_main_slot_3_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_set_button_color(ui_btMainSlot3, BTN_COLOR_NORMAL);
             ui_show_slot_serial_detail(0);
             ui_show_slot_detail_panel(false);
+            break;
+        case HSME_MODBUS_GET_SLOT_3_DATA:
+            ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_3);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
@@ -293,6 +295,9 @@ app_state_main_slot_4_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_show_slot_serial_detail(0);
             ui_show_slot_detail_panel(false);
             break;
+        case HSME_MODBUS_GET_SLOT_4_DATA:
+            ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_4);
+            break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
             break;
@@ -331,6 +336,9 @@ app_state_main_slot_5_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_set_button_color(ui_btMainSlot5, BTN_COLOR_NORMAL);
             ui_show_slot_serial_detail(0);
             ui_show_slot_detail_panel(false);
+            break;
+        case HSME_MODBUS_GET_SLOT_5_DATA:
+            ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_5);
             break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);

@@ -261,29 +261,476 @@ void ui_update_fet_status_value(DeviceHSM_t *me, uint8_t slot_index)
         ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
         return;
     }
-    uint8_t fet_status = me->bms_data[slot_index].fet_status;
-    const char *state_text = "UNKNOWN";
     
-    switch (fet_status) {
-        case 2:
-            state_text = "STANDBY";
-            break;
-        case 3:
-            state_text = "LOAD";
-            break;
-        case 4:
-            state_text = "CHARGE";
-            break;
-        case 5:
-            state_text = "ERROR";
-            break;
-        default:
-            state_text = "UNKNOWN";
-            break;
+    uint8_t fet_status = me->bms_data[slot_index].fet_status;
+    
+    bool chg_on  = (fet_status & 0x01) != 0;
+    bool pchg_on = (fet_status & 0x02) != 0;
+    bool dsg_on  = (fet_status & 0x04) != 0;
+    bool pdsg_on = (fet_status & 0x08) != 0;
+    
+    const char *status_text = "UNKNOWN";
+    
+    if (chg_on && !dsg_on) {
+        status_text = pchg_on ? "PCHG" : "CHG";
+    } 
+    else if (!chg_on && dsg_on) {
+        status_text = pdsg_on ? "PDSG" : "DSG";
+    }
+    else if (!chg_on && !dsg_on) {
+        status_text = "IDLE";
+    }
+    else if (chg_on && dsg_on) {
+        status_text = "ERROR";
+    }
+    else {
+        status_text = "UNKNOWN";
     }
     
     if (ui_lock(-1)) {
-        lv_label_set_text(ui_lbMainSlotFETSttValue, state_text);
+        lv_label_set_text(ui_lbMainSlotFETSttValue, status_text);
         ui_unlock();
     }
+}
+void ui_update_alarm_bits_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+
+    uint8_t alarm_bits = me->bms_data[slot_index].alarm_bits;
+    
+    char alarm_bits_str[6];
+    snprintf(alarm_bits_str, sizeof(alarm_bits_str), "%d", alarm_bits);
+
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotAlarmBitsValue, alarm_bits_str);
+        ui_unlock();
+    }    
+}
+
+void ui_update_faults_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    uint8_t faults = me->bms_data[slot_index].faults;
+    
+    bool ocd = (faults & 0x01) != 0;
+    bool scd = (faults & 0x02) != 0;
+    bool ov  = (faults & 0x04) != 0;
+    bool uv  = (faults & 0x08) != 0;
+    bool occ = (faults & 0x10) != 0;
+    
+    const char *status_text = "NONE";
+    
+    if (faults == 0) {
+        status_text = "NONE";
+    }
+    else if (scd) {
+        status_text = "SCD";
+    }
+    else if (ocd) {
+        status_text = "OCD";
+    }
+    else if (occ) {
+        status_text = "OCC";
+    }
+    else if (ov) {
+        status_text = "OV";
+    }
+    else if (uv) {
+        status_text = "UV";
+    }
+    else {
+        status_text = "FAULT";
+    }
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotFaultValue, status_text);
+        ui_unlock();
+    }
+}
+
+void ui_update_pack_volt_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    float volt = me->bms_data[slot_index].pack_volt / 1000.0f;
+    snprintf(value_str, sizeof(value_str), "%.3fV", volt);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotPackVoltValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_stack_volt_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    float volt = me->bms_data[slot_index].stack_volt / 1000.0f;
+    snprintf(value_str, sizeof(value_str), "%.3fV", volt);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotStackVoltValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_pack_cur_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    float current = me->bms_data[slot_index].pack_current / 1000.0f;
+    snprintf(value_str, sizeof(value_str), "%.3fA", current);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotPackCurValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_ld_volt_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    float volt = me->bms_data[slot_index].ld_volt / 1000.0f;
+    snprintf(value_str, sizeof(value_str), "%.3fV", volt);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotIdVoltValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_pin_percent_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[8];
+    snprintf(value_str, sizeof(value_str), "%d%%", me->bms_data[slot_index].pin_percent);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotPinPercentValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_tg_percent_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[8];
+    snprintf(value_str, sizeof(value_str), "%d%%", me->bms_data[slot_index].percent_target);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotTgPercentValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_cel_res_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "%dmR", me->bms_data[slot_index].cell_resistance);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotCelResValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_soc_per_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[8];
+    snprintf(value_str, sizeof(value_str), "%d%%", me->bms_data[slot_index].soc_percent);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotSocPerValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_soh_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "%d", me->bms_data[slot_index].soh_value);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotSOHValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_sin_par_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    const char *status_text = me->bms_data[slot_index].single_parallel == 0 ? "SINGLE" : "PARALLEL";
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotSinParValue, status_text);
+        ui_unlock();
+    }
+}
+
+void ui_update_temp1_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    float temp = me->bms_data[slot_index].temp1 / 10.0f;
+    snprintf(value_str, sizeof(value_str), "%.1f°C", temp);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotTemp1Value, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_temp2_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    float temp = me->bms_data[slot_index].temp2 / 10.0f;
+    snprintf(value_str, sizeof(value_str), "%.1f°C", temp);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotTemp2Value, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_temp3_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    float temp = me->bms_data[slot_index].temp3 / 10.0f;
+    snprintf(value_str, sizeof(value_str), "%.1f°C", temp);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotTemp3Value, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_cell_voltages(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    lv_obj_t *cell_labels[] = {
+        ui_lbMainSlotCell1Value,
+        ui_lbMainSlotCell2Value,
+        ui_lbMainSlotCell3Value,
+        ui_lbMainSlotCell4Value,
+        ui_lbMainSlotCell5Value,
+        ui_lbMainSlotCell6Value,
+        ui_lbMainSlotCell7Value,
+        ui_lbMainSlotCell8Value,
+        ui_lbMainSlotCell9Value,
+        ui_lbMainSlotCell10Value,
+        ui_lbMainSlotCell11Value,
+        ui_lbMainSlotCell12Value,
+        ui_lbMainSlotCell13Value
+    };
+    
+    char value_str[16];
+    
+    if (ui_lock(-1)) {
+        for (uint8_t i = 0; i < 13; i++) {
+            snprintf(value_str, sizeof(value_str), "%dmV", me->bms_data[slot_index].cell_volt[i]);
+            lv_label_set_text(cell_labels[i], value_str);
+        }
+        ui_unlock();
+    }
+}
+
+void ui_update_accu_int_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "%lu", me->bms_data[slot_index].accu_int);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotACCUIntValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_accu_frac_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "%lu", me->bms_data[slot_index].accu_frac);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotACCUFracValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_accu_time_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "%lu", me->bms_data[slot_index].accu_time);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotACCUTimeValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_safety_a_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "0x%04X", me->bms_data[slot_index].safety_a);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotSafetyAValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_safety_b_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "0x%04X", me->bms_data[slot_index].safety_b);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotSafetyBValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_safety_c_value(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    char value_str[16];
+    snprintf(value_str, sizeof(value_str), "0x%04X", me->bms_data[slot_index].safety_c);
+    
+    if (ui_lock(-1)) {
+        lv_label_set_text(ui_lbMainSlotSafetyCValue, value_str);
+        ui_unlock();
+    }
+}
+
+void ui_update_all_slot_details(DeviceHSM_t *me, uint8_t slot_index)
+{
+    if (slot_index >= BMS_BATTERY_NUM) {
+        ESP_LOGE(TAG, "Invalid slot index: %d", slot_index);
+        return;
+    }
+    
+    ui_update_bms_state_value(me, slot_index);
+    ui_update_ctrl_request_value(me, slot_index);
+    ui_update_ctrl_response_value(me, slot_index);
+    ui_update_fet_ctrl_pin_value(me, slot_index);
+    ui_update_fet_status_value(me, slot_index);
+    ui_update_alarm_bits_value(me, slot_index);
+    ui_update_faults_value(me, slot_index);
+    ui_update_pack_volt_value(me, slot_index);
+    ui_update_stack_volt_value(me, slot_index);
+    ui_update_pack_cur_value(me, slot_index);
+    ui_update_ld_volt_value(me, slot_index);
+    ui_update_pin_percent_value(me, slot_index);
+    ui_update_tg_percent_value(me, slot_index);
+    ui_update_cel_res_value(me, slot_index);
+    ui_update_soc_per_value(me, slot_index);
+    ui_update_soh_value(me, slot_index);
+    ui_update_sin_par_value(me, slot_index);
+    ui_update_temp1_value(me, slot_index);
+    ui_update_temp2_value(me, slot_index);
+    ui_update_temp3_value(me, slot_index);
+    ui_update_cell_voltages(me, slot_index);
+    ui_update_accu_int_value(me, slot_index);
+    ui_update_accu_frac_value(me, slot_index);
+    ui_update_accu_time_value(me, slot_index);
+    ui_update_safety_a_value(me, slot_index);
+    ui_update_safety_b_value(me, slot_index);
+    ui_update_safety_c_value(me, slot_index);
 }

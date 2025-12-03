@@ -146,35 +146,30 @@ void modbus_poll_task(void *arg)
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 0, 51, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_1);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_1_DATA, NULL);
-            ESP_LOGI(TAG, "Modbus: Read Holding 40001-40051 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 100, 51, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_2);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_2_DATA, NULL);
-            ESP_LOGI(TAG, "Modbus: Read Holding 40101-40151 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 200, 51, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_3);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_3_DATA, NULL);
-            ESP_LOGI(TAG, "Modbus: Read Holding 40201-40251 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 300, 51, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_4);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_4_DATA, NULL);
-            ESP_LOGI(TAG, "Modbus: Read Holding 40301-40351 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 400, 51, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_5);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_5_DATA, NULL);
-            ESP_LOGI(TAG, "Modbus: Read Holding 40401-40451 OK");
         }
         vTaskDelay(pdMS_TO_TICKS(600));
         // if (modbus_master_read_input_registers(1, 0, 51, input_regs) == ESP_OK) {

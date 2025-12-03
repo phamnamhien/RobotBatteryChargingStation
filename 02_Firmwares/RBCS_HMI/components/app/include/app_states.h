@@ -140,6 +140,31 @@ void ui_update_ctrl_request_value(DeviceHSM_t *me, uint8_t slot_index);
 void ui_update_ctrl_response_value(DeviceHSM_t *me, uint8_t slot_index);
 void ui_update_fet_ctrl_pin_value(DeviceHSM_t *me, uint8_t slot_index);
 void ui_update_fet_status_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_alarm_bits_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_faults_value(DeviceHSM_t *me, uint8_t slot_index);
+
+void ui_update_pack_volt_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_stack_volt_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_pack_cur_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_ld_volt_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_pin_percent_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_tg_percent_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_cel_res_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_soc_per_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_soh_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_sin_par_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_temp1_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_temp2_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_temp3_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_cell_voltages(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_accu_int_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_accu_frac_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_accu_time_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_safety_a_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_safety_b_value(DeviceHSM_t *me, uint8_t slot_index);
+void ui_update_safety_c_value(DeviceHSM_t *me, uint8_t slot_index);
+
+void ui_update_all_slot_details(DeviceHSM_t *me, uint8_t slot_index);
 
 #ifdef __cplusplus
 }
