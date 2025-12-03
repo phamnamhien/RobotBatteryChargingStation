@@ -63,8 +63,6 @@ app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
     static uint8_t loading_count = 0;
     switch (event) {
         case HSME_ENTRY:
-            // ESP_LOGI(TAG, "Writing to Modbus register...");
-            // modbus_master_write_single_register(1, 0, 1111);
             ticks_start(tm_loading, 100);
             break;
         case HSME_INIT:
@@ -159,6 +157,7 @@ app_state_main_slot_1_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_ENTRY:
             ui_set_button_color(ui_btMainSlot1, BTN_COLOR_ACTIVE);
             ui_show_slot_serial_detail(1);
+            ui_clear_all_slot_details();
             ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 1 Clicked");
             break;
@@ -201,6 +200,7 @@ app_state_main_slot_2_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_ENTRY:
             ui_set_button_color(ui_btMainSlot2, BTN_COLOR_ACTIVE);
             ui_show_slot_serial_detail(2);
+            ui_clear_all_slot_details();
             ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 2 Clicked");
             break;
@@ -243,6 +243,7 @@ app_state_main_slot_3_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_ENTRY:
             ui_set_button_color(ui_btMainSlot3, BTN_COLOR_ACTIVE);
             ui_show_slot_serial_detail(3);
+            ui_clear_all_slot_details();
             ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 3 Clicked");
             break;
@@ -285,6 +286,7 @@ app_state_main_slot_4_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_ENTRY:
             ui_set_button_color(ui_btMainSlot4, BTN_COLOR_ACTIVE);
             ui_show_slot_serial_detail(4);
+            ui_clear_all_slot_details();
             ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 4 Clicked");
             break;
@@ -327,6 +329,7 @@ app_state_main_slot_5_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_ENTRY:
             ui_set_button_color(ui_btMainSlot5, BTN_COLOR_ACTIVE);
             ui_show_slot_serial_detail(5);
+            ui_clear_all_slot_details();
             ui_show_slot_detail_panel(true);
             ESP_LOGI(TAG, "Main Slot 5 Clicked");
             break;

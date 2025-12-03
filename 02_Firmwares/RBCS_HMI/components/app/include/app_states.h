@@ -37,7 +37,21 @@ extern "C" {
 #endif
 
 
-#define BMS_BATTERY_NUM        5
+
+
+typedef enum {
+    IDX_SLOT_1 = 0,
+    IDX_SLOT_2,
+    IDX_SLOT_3,
+    IDX_SLOT_4,
+    IDX_SLOT_5,
+    TOTAL_SLOT,
+} SlotIndex_t;
+typedef enum {
+    BMS_SLOT_EMPTY = 0,
+    BMS_SLOT_CONNECTED,
+    MBS_SLOT_DISCONNECTED,
+} BMS_Slot_State_t;
 
 typedef struct {
     // BMS State Machine
@@ -86,6 +100,12 @@ typedef struct {
     
 } BMS_Data_t;
 
+typedef struct {
+    uint8_t manual_swap[TOTAL_SLOT];
+    BMS_Slot_State_t slot_state[TOTAL_SLOT];
+
+} BMS_Information_t;
+
 typedef enum {
 	HSME_LOOP = HSME_START,
 
@@ -114,16 +134,10 @@ typedef enum {
 typedef struct {
 	HSM parent;
 	
-	BMS_Data_t bms_data[BMS_BATTERY_NUM];
+	BMS_Data_t bms_data[TOTAL_SLOT];
+    BMS_Information_t bms_info;
 } DeviceHSM_t;
 
-typedef enum {
-    IDX_SLOT_1 = 0,
-    IDX_SLOT_2,
-    IDX_SLOT_3,
-    IDX_SLOT_4,
-    IDX_SLOT_5,
-} SlotIndex_t;
 
 void app_state_hsm_init(DeviceHSM_t *me);
 
@@ -135,39 +149,16 @@ void ui_update_main_slot_capacity(DeviceHSM_t *me, int8_t slot_index);
 void ui_show_slot_serial_detail(uint8_t slot_number);
 void ui_show_slot_detail_panel(bool show);
 
-void ui_update_bms_state_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_ctrl_request_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_ctrl_response_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_fet_ctrl_pin_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_fet_status_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_alarm_bits_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_faults_value(DeviceHSM_t *me, uint8_t slot_index);
-
-void ui_update_pack_volt_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_stack_volt_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_pack_cur_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_ld_volt_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_pin_percent_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_tg_percent_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_cel_res_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_soc_per_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_soh_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_sin_par_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_temp1_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_temp2_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_temp3_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_cell_voltages(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_accu_int_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_accu_frac_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_accu_time_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_safety_a_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_safety_b_value(DeviceHSM_t *me, uint8_t slot_index);
-void ui_update_safety_c_value(DeviceHSM_t *me, uint8_t slot_index);
-
 void ui_update_all_slot_details(DeviceHSM_t *me, uint8_t slot_index);
+void ui_clear_all_slot_details(void);
+
+
+
 
 #ifdef __cplusplus
 }
+
+
 #endif
 
 #endif // APP_STATES_H

@@ -84,11 +84,13 @@ void fnMainManualSwap(lv_event_t * e)
 
 // ============================================
 // Modbus Callbacks & Task
-// ============================================
-void modbus_data_received(uint8_t slave_addr, uint8_t reg_type, 
-                          uint16_t reg_addr, uint16_t *data, uint16_t length)
+// ============================================// Callback nhận dữ liệu Modbus
+void modbus_data_received(uint8_t slave_addr, uint8_t reg_type, uint16_t reg_addr, uint16_t *data, uint16_t length)
 {
-    // Callback for debugging if needed
+    // ESP_LOGI(TAG, "Received data from slave %d, type 0x%02X, addr %d:", slave_addr, reg_type, reg_addr);
+    // for (int i = 0; i < length; i++) {
+    //     ESP_LOGI(TAG, "  [%d] = %d", i, data[i]);
+    // }
 }
 
 static void modbus_battery_sync_data(DeviceHSM_t *me, uint16_t* dat, uint8_t slot_index) 
@@ -146,35 +148,42 @@ void modbus_poll_task(void *arg)
     ESP_LOGI(TAG, "Modbus polling task started");
 
     while (1) {
-        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 0, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 0, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_1);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_1_DATA, NULL);
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 100, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 100, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_2);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_2_DATA, NULL);
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 200, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 200, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_3);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_3_DATA, NULL);
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 300, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 300, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_4);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_4_DATA, NULL);
         }
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 400, 51, holding_regs) == ESP_OK) {
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 400, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_5);
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_5_DATA, NULL);
         }
-        vTaskDelay(pdMS_TO_TICKS(600));
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 1000, 50, holding_regs) == ESP_OK) {
+            modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_5);
+            HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_5_DATA, NULL);
+        }
+        vTaskDelay(pdMS_TO_TICKS(500));
+
     }
 }
 
@@ -378,6 +387,32 @@ void app_main(void)
     static lv_disp_drv_t disp_drv;
 
     ESP_LOGI(TAG, "===========================================");
+    ESP_LOGI(TAG, "  📊 INITIAL MEMORY STATE");
+    ESP_LOGI(TAG, "===========================================");
+    
+    // Total vs Free PSRAM
+    size_t total_psram = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+    size_t free_psram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+    size_t used_psram = total_psram - free_psram;
+    
+    ESP_LOGI(TAG, "  PSRAM Total:      %u KB", total_psram / 1024);
+    ESP_LOGI(TAG, "  PSRAM Used:       %u KB (%.1f%%)", 
+             used_psram / 1024, 
+             (used_psram * 100.0) / total_psram);
+    ESP_LOGI(TAG, "  PSRAM Free:       %u KB (%.1f%%)", 
+             free_psram / 1024,
+             (free_psram * 100.0) / total_psram);
+    
+    // Largest free block
+    size_t largest_free = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+    ESP_LOGI(TAG, "  Largest block:    %u KB", largest_free / 1024);
+    
+    // Internal RAM
+    ESP_LOGI(TAG, "  Internal RAM:     %u KB", esp_get_free_heap_size() / 1024);
+    ESP_LOGI(TAG, "===========================================");
+
+
+    ESP_LOGI(TAG, "===========================================");
     ESP_LOGI(TAG, "  RBCS HMI - Battery Charging Station");
     ESP_LOGI(TAG, "===========================================");
 
@@ -395,17 +430,19 @@ void app_main(void)
     ESP_LOGI(TAG, "[1/9] Skipping semaphores (tear effect avoidance disabled)");
 #endif
 
-    // ========================================
-    // STEP 2: Initialize I2C
-    // ========================================
-    ESP_LOGI(TAG, "[2/9] Initializing I2C...");
-    ESP_ERROR_CHECK(i2c_master_init());
-    ESP_LOGI(TAG, "      I2C initialized");
+#if LCD_PIN_NUM_BK_LIGHT >= 0
+    ESP_LOGI(TAG, "Turn off LCD backlight");
+    gpio_config_t bk_gpio_config = {
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = 1ULL << LCD_PIN_NUM_BK_LIGHT
+    };
+    ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
+#endif
 
     // ========================================
-    // STEP 3: Install RGB LCD Panel
+    // STEP 2: Install RGB LCD Panel
     // ========================================
-    ESP_LOGI(TAG, "[3/9] Installing RGB LCD panel driver...");
+    ESP_LOGI(TAG, "[2/9] Installing RGB LCD panel driver...");
     esp_lcd_panel_handle_t panel_handle = NULL;
     esp_lcd_rgb_panel_config_t panel_config = {
         .data_width = 16,
@@ -435,8 +472,8 @@ void app_main(void)
             .hsync_back_porch = 8,
             .hsync_front_porch = 8,
             .hsync_pulse_width = 4,
-            .vsync_back_porch = 8,
-            .vsync_front_porch = 8,
+            .vsync_back_porch = 16,
+            .vsync_front_porch = 16,
             .vsync_pulse_width = 4,
             .flags.pclk_active_neg = true,
         },
@@ -446,6 +483,17 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&panel_config, &panel_handle));
     ESP_LOGI(TAG, "      RGB panel created (num_fbs=%d)", HMI_LCD_NUM_FB);
 
+#if LCD_PIN_NUM_BK_LIGHT >= 0
+    ESP_LOGI(TAG, "Turn on LCD backlight");
+    gpio_set_level(LCD_PIN_NUM_BK_LIGHT, LCD_BK_LIGHT_ON_LEVEL);
+#endif
+    // ========================================
+    // STEP 3: Initialize I2C
+    // ========================================
+    ESP_LOGI(TAG, "[3/9] Initializing I2C...");
+    ESP_ERROR_CHECK(i2c_master_init());
+    ESP_LOGI(TAG, "      I2C initialized");
+    
     // ========================================
     // STEP 4: Register VSYNC Callback
     // ========================================
@@ -574,6 +622,13 @@ void app_main(void)
         ui_unlock();
     }
     ESP_LOGI(TAG, "      SquareLine UI initialized");
+    // ========================================
+    // Initialize HSM (State Machine)
+    // ========================================
+    ESP_LOGI(TAG, "Initializing HSM...");
+    ESP_ERROR_CHECK(ticks_init());
+    app_state_hsm_init(&device);
+    ESP_LOGI(TAG, "      HSM initialized");
 
     // ========================================
     // Initialize Modbus RTU Master
@@ -592,15 +647,6 @@ void app_main(void)
     } else {
         ESP_LOGE(TAG, "      Modbus FAILED: %s", esp_err_to_name(modbus_ret));
     }
-
-    // ========================================
-    // Initialize HSM (State Machine)
-    // ========================================
-    ESP_LOGI(TAG, "Initializing HSM...");
-    ESP_ERROR_CHECK(ticks_init());
-    app_state_hsm_init(&device);
-    ESP_LOGI(TAG, "      HSM initialized");
-
     // ========================================
     // System Startup Complete
     // ========================================
