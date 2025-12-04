@@ -161,7 +161,21 @@ static void modbus_battery_sync_data(DeviceHSM_t *me, uint16_t* dat, uint8_t slo
         ESP_LOGW(TAG, "⚠️  stack_volt = 0 for slot %d", slot_index);
     }
 }
+static void modbus_bms_information_sync_data(DeviceHSM_t *me, uint16_t* dat) {
+    me->bms_info.manual_swap[IDX_SLOT_1] = dat[0];
+    me->bms_info.manual_swap[IDX_SLOT_2] = dat[1];
+    me->bms_info.manual_swap[IDX_SLOT_3] = dat[2];
+    me->bms_info.manual_swap[IDX_SLOT_4] = dat[3];
+    me->bms_info.manual_swap[IDX_SLOT_5] = dat[4];
 
+    me->bms_info.slot_state[IDX_SLOT_1] = dat[5];
+    me->bms_info.slot_state[IDX_SLOT_2] = dat[6];
+    me->bms_info.slot_state[IDX_SLOT_3] = dat[7];
+    me->bms_info.slot_state[IDX_SLOT_4] = dat[8];
+    me->bms_info.slot_state[IDX_SLOT_5] = dat[9];
+
+    me->bms_info.swap_state = dat[10];
+}
 void modbus_poll_task(void *arg)
 {
     uint16_t holding_regs[60];
@@ -360,6 +374,7 @@ void modbus_poll_task(void *arg)
         // ===== STATION STATE (Register 1000) =====
         err = modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 1000, 50, holding_regs);
         if (err == ESP_OK) {
+            modbus_bms_information_sync_data(&device, holding_regs);
             ESP_LOGI(TAG, "STATION STATE data synced");
             is_data_not_received[TOTAL_SLOT] = 0;
             consecutive_errors = 0;

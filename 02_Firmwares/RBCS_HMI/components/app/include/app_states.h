@@ -53,6 +53,11 @@ typedef enum {
     MBS_SLOT_DISCONNECTED,
 } BMS_Slot_State_t;
 
+typedef enum {
+    SWAP_STATE_IDLE = 0,
+    SWAP_STATE_ROBOT_COMMING,
+    // ... add more states if needed
+} BMS_Swap_State_t;
 typedef struct {
     // BMS State Machine
     uint8_t bms_state;          // BMS state: 2=standby, 3=load, 4=charge, 5=error
@@ -103,7 +108,8 @@ typedef struct {
 typedef struct {
     uint8_t manual_swap[TOTAL_SLOT];
     BMS_Slot_State_t slot_state[TOTAL_SLOT];
-
+    BMS_Swap_State_t swap_state;
+    
 } BMS_Information_t;
 
 typedef enum {
@@ -136,10 +142,10 @@ typedef enum {
 typedef struct {
 	HSM parent;
 	
-	volatile BMS_Data_t bms_data[TOTAL_SLOT];
-    volatile BMS_Information_t bms_info;
+	BMS_Data_t bms_data[TOTAL_SLOT];
+    BMS_Information_t bms_info;
 
-    volatile uint8_t is_bms_not_connected;
+    uint8_t is_bms_not_connected;
 } DeviceHSM_t;
 
 

@@ -131,6 +131,9 @@ app_state_main_common_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_5);
             ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_5);
             break;
+        case HSME_MODBUS_GET_STATION_STATE_DATA:
+            // Handle station state data update if needed
+            break;
         case HSME_CHANGE_SCR_MAIN_TO_SETTING:
             HSM_Tran((HSM *)This, &app_state_setting, NULL, NULL);
             break;
@@ -152,7 +155,7 @@ app_state_main_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_load_screen(ui_scrMain);
             ui_show_slot_serial_detail(0);
             ui_show_slot_detail_panel(false);
-            
+
             // ✅ IN RA ĐỊA CHỈ CÁC UI LABELS
             ESP_LOGI(TAG, "===========================================");
             ESP_LOGI(TAG, "  📺 UI LABEL ADDRESSES");
