@@ -221,7 +221,7 @@ void modbus_poll_task(void *arg)
                 }
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
+        vTaskDelay(pdMS_TO_TICKS(50));
 
         // ===== SLOT 2 (Register 100) =====
         err = modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 100, 50, holding_regs);
@@ -258,7 +258,7 @@ void modbus_poll_task(void *arg)
                 }
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
+        vTaskDelay(pdMS_TO_TICKS(50));
 
         // ===== SLOT 3 (Register 200) =====
         err = modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 200, 50, holding_regs);
@@ -295,7 +295,7 @@ void modbus_poll_task(void *arg)
                 }
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
+        vTaskDelay(pdMS_TO_TICKS(50));
 
         // ===== SLOT 4 (Register 300) =====
         err = modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 300, 50, holding_regs);
@@ -332,7 +332,7 @@ void modbus_poll_task(void *arg)
                 }
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
+        vTaskDelay(pdMS_TO_TICKS(50));
 
         // ===== SLOT 5 (Register 400) =====
         err = modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 400, 50, holding_regs);
@@ -369,7 +369,7 @@ void modbus_poll_task(void *arg)
                 }
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
+        vTaskDelay(pdMS_TO_TICKS(50));
 
         // ===== STATION STATE (Register 1000) =====
         err = modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 1000, 50, holding_regs);
@@ -385,8 +385,8 @@ void modbus_poll_task(void *arg)
             is_data_not_received[TOTAL_SLOT] = 1;
             consecutive_errors++;
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
-        
+        vTaskDelay(pdMS_TO_TICKS(50));
+       
         // ===== CHECK CONNECTION STATUS =====
         if (is_data_not_received[IDX_SLOT_1] 
             && is_data_not_received[IDX_SLOT_2] 
@@ -405,6 +405,8 @@ void modbus_poll_task(void *arg)
             device.is_bms_not_connected = 0;
             HSM_Run((HSM *)&device, HSME_MODBUS_CONNECTED, NULL);   
         }
+        HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_DATA, NULL);
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 

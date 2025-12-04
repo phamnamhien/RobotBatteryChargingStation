@@ -106,33 +106,11 @@ app_state_main_common_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_EXIT:
 
             break;
-        case HSME_MODBUS_GET_SLOT_1_DATA:
-            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_1);
-            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_1);
-            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_1);
-            break;
-        case HSME_MODBUS_GET_SLOT_2_DATA:
-            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_2);
-            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_2);
-            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_2);
-            break;
-        case HSME_MODBUS_GET_SLOT_3_DATA:
-            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_3);
-            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_3);
-            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_3);
-            break;
-        case HSME_MODBUS_GET_SLOT_4_DATA:
-            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_4);
-            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_4);
-            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_4);
-            break;
-        case HSME_MODBUS_GET_SLOT_5_DATA:
-            ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_5);
-            ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_5);
-            ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_5);
-            break;
         case HSME_MODBUS_GET_STATION_STATE_DATA:
             // Handle station state data update if needed
+            break;
+        case HSME_MODBUS_GET_SLOT_DATA:
+            ui_update_all_slots_display((DeviceHSM_t *)This);
             break;
         case HSME_CHANGE_SCR_MAIN_TO_SETTING:
             HSM_Tran((HSM *)This, &app_state_setting, NULL, NULL);

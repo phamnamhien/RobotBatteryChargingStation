@@ -28,10 +28,6 @@ app_state_hsm_init(DeviceHSM_t *me) {
     HSM_Create((HSM *)me, "app", &app_state_loading);
 }    
 
-
-
-
-
 static HSM_EVENT 
 app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {

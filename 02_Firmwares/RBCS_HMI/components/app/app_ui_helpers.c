@@ -5,12 +5,12 @@ static const char *TAG = "UI_HELPERS";
 // ============================================
 // ĐỊNH NGHĨA MÀU SẮC
 // ============================================
-#define COLOR_STANDBY   0x808080  // Màu xám cho Standby
-#define COLOR_LOAD      0x00FF00  // Màu xanh lá cho Load (đang phóng điện)
-#define COLOR_CHARGE    0x00BFFF  // Màu xanh dương cho Charge
+#define COLOR_STANDBY   0xFFFFFF  // Màu den cho Standby
+#define COLOR_LOAD      0x00BFFF  // Màu xanh dương cho Load
+#define COLOR_CHARGE    0x00FF00  // Màu xanh lá cho Charge (đang phóng điện)
 #define COLOR_ERROR     0xFF0000  // Màu đỏ cho Error
 #define COLOR_LOW_SOC   0xFF0000  // Màu đỏ cho SOC < 10%
-
+#define COLOR_OTHER     0x808080
 /*--------------------------------------------------------------------*/
 /* OPTIMIZED BATCH UPDATE - SINGLE LOCK */
 /*--------------------------------------------------------------------*/
@@ -503,4 +503,184 @@ void ui_show_main_not_connect(bool show)
     }
 }
 
-
+/*--------------------------------------------------------------------*/
+/* OPTIMIZED BATCH UPDATE - ALL SLOTS AT ONCE */
+/*--------------------------------------------------------------------*/
+void ui_update_all_slots_display(DeviceHSM_t *me)
+{
+    if (!ui_lock(-1)) {
+        ESP_LOGE(TAG, "Failed to lock UI");
+        return;
+    }
+    
+    // ✅ CHỈ LOCK 1 LẦN CHO TẤT CẢ 5 SLOTS!
+    
+    // Arrays of UI objects (pre-defined for speed)
+    lv_obj_t *voltage_labels[] = {
+        ui_lbMainVoltageSlot1, ui_lbMainVoltageSlot2, ui_lbMainVoltageSlot3,
+        ui_lbMainVoltageSlot4, ui_lbMainVoltageSlot5
+    };
+    
+    lv_obj_t *capacity_labels[] = {
+        ui_lbMainCapSlot1, ui_lbMainCapSlot2, ui_lbMainCapSlot3,
+        ui_lbMainCapSlot4, ui_lbMainCapSlot5
+    };
+    
+    lv_obj_t *battery_bars[] = {
+        ui_barMainBatPercent1, ui_barMainBatPercent2, ui_barMainBatPercent3,
+        ui_barMainBatPercent4, ui_barMainBatPercent5
+    };
+    
+    lv_obj_t *soc_labels[] = {
+        ui_lbMainSlot1SOC, ui_lbMainSlot2SOC, ui_lbMainSlot3SOC,
+        ui_lbMainSlot4SOC, ui_lbMainSlot5SOC
+    };
+    
+    lv_obj_t *warn_images[] = {
+        ui_imgMainBatWarn1, ui_imgMainBatWarn2, ui_imgMainBatWarn3,
+        ui_imgMainBatWarn4, ui_imgMainBatWarn5
+    };
+    
+    // Buffer tái sử dụng (giảm malloc)
+    char buf[16];
+    
+    // ✅ LOOP QUA TẤT CẢ 5 SLOTS
+    for (uint8_t i = 0; i < TOTAL_SLOT; i++) {
+        BMS_Data_t *bms = &me->bms_data[i];
+        BMS_Slot_State_t slot_state = me->bms_info.slot_state[i];
+        uint8_t soc = bms->soc_percent;
+        if (soc > 100) soc = 100;
+        
+        // ============================================
+        // CASE 1: MẤT KẾT NỐI BMS
+        // ============================================
+        if (me->is_bms_not_connected) {
+            lv_obj_add_flag(voltage_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(capacity_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(battery_bars[i], LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(soc_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(warn_images[i], LV_OBJ_FLAG_HIDDEN);
+            continue;  // Skip to next slot
+        }
+        
+        // ============================================
+        // CASE 2: SLOT EMPTY
+        // ============================================
+        if (slot_state == BMS_SLOT_EMPTY) {
+            // Voltage
+            lv_obj_clear_flag(voltage_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(voltage_labels[i], "-V");
+            
+            // Capacity
+            lv_obj_clear_flag(capacity_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(capacity_labels[i], "-mAh");
+            
+            // Bar & SOC
+            lv_obj_add_flag(battery_bars[i], LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(soc_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(soc_labels[i], "-%");
+            
+            // Warning
+            lv_obj_add_flag(warn_images[i], LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+        
+        // ============================================
+        // CASE 3: SLOT DISCONNECTED
+        // ============================================
+        if (slot_state == MBS_SLOT_DISCONNECTED) {
+            // Voltage
+            lv_obj_clear_flag(voltage_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(voltage_labels[i], "-V");
+            
+            // Capacity
+            lv_obj_clear_flag(capacity_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(capacity_labels[i], "-mAh");
+            
+            // Bar & SOC
+            lv_obj_add_flag(battery_bars[i], LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(soc_labels[i], LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(soc_labels[i], "-%");
+            
+            // Warning
+            lv_obj_clear_flag(warn_images[i], LV_OBJ_FLAG_HIDDEN);
+            continue;
+        }
+        
+        // ============================================
+        // CASE 4: SLOT CONNECTED
+        // ============================================
+        if (slot_state == BMS_SLOT_CONNECTED) {
+            // --- Update Voltage ---
+            lv_obj_clear_flag(voltage_labels[i], LV_OBJ_FLAG_HIDDEN);
+            snprintf(buf, sizeof(buf), "%.3fV", bms->stack_volt / 1000.0f);
+            lv_label_set_text(voltage_labels[i], buf);
+            
+            // --- Update Capacity ---
+            lv_obj_clear_flag(capacity_labels[i], LV_OBJ_FLAG_HIDDEN);
+            snprintf(buf, sizeof(buf), "%dmAh", bms->capacity);
+            lv_label_set_text(capacity_labels[i], buf);
+            
+            // --- Check BMS State ---
+            uint8_t bms_state = bms->bms_state;
+            
+            // SUB-CASE: ERROR STATE
+            if (bms_state == 5) {
+                lv_obj_add_flag(battery_bars[i], LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(soc_labels[i], LV_OBJ_FLAG_HIDDEN);
+                snprintf(buf, sizeof(buf), "%d%%", soc);
+                lv_label_set_text(soc_labels[i], buf);
+                lv_obj_set_style_text_color(soc_labels[i], 
+                                           lv_color_hex(COLOR_ERROR),  // Red
+                                           LV_PART_MAIN | LV_STATE_DEFAULT);
+                lv_obj_clear_flag(warn_images[i], LV_OBJ_FLAG_HIDDEN);
+                continue;
+            }
+            
+            // SUB-CASE: NORMAL STATE (2=Standby, 3=Load, 4=Charge)
+            lv_obj_add_flag(warn_images[i], LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(battery_bars[i], LV_OBJ_FLAG_HIDDEN);
+            lv_bar_set_value(battery_bars[i], soc, LV_ANIM_OFF);
+            
+            lv_obj_clear_flag(soc_labels[i], LV_OBJ_FLAG_HIDDEN);
+            snprintf(buf, sizeof(buf), "%d%%", soc);
+            lv_label_set_text(soc_labels[i], buf);
+            
+            // --- Determine Color ---
+            uint32_t color;
+            
+            if (soc < 10) {
+                // Priority: Low SOC → Red
+                color = COLOR_LOW_SOC;
+            } else {
+                // Based on BMS state
+                switch (bms_state) {
+                    case 2:  // Standby → Gray
+                        color = COLOR_STANDBY;
+                        break;
+                    case 3:  // Load → Green
+                        color = COLOR_LOAD;
+                        break;
+                    case 4:  // Charge → Blue
+                        color = COLOR_CHARGE;
+                        break;
+                    default:
+                        color = COLOR_OTHER;
+                        break;
+                }
+            }
+            
+            // Apply color to bar indicator
+            lv_obj_set_style_bg_color(battery_bars[i], 
+                                      lv_color_hex(color), 
+                                      LV_PART_INDICATOR | LV_STATE_DEFAULT);
+            
+            // Apply color to SOC label
+            lv_obj_set_style_text_color(soc_labels[i], 
+                                        lv_color_hex(color), 
+                                        LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+    }
+    
+    ui_unlock();  // ✅ CHỈ UNLOCK 1 LẦN!
+}

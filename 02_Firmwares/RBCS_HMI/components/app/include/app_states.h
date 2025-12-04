@@ -122,6 +122,7 @@ typedef enum {
     HSME_MODBUS_GET_SLOT_3_DATA,
     HSME_MODBUS_GET_SLOT_4_DATA,
     HSME_MODBUS_GET_SLOT_5_DATA,
+    HSME_MODBUS_GET_SLOT_DATA,
     HSME_MODBUS_GET_STATION_STATE_DATA,
     HSME_MODBUS_CONNECTED,
     HSME_MODBUS_NOTCONNECTED,
@@ -155,6 +156,7 @@ void app_state_hsm_init(DeviceHSM_t *me);
 void ui_update_main_slot_voltage(DeviceHSM_t *me, int8_t slot_index);
 void ui_update_main_battery_percent(DeviceHSM_t *me, uint8_t slot_index);
 void ui_update_main_slot_capacity(DeviceHSM_t *me, int8_t slot_index);
+void ui_update_all_slots_display(DeviceHSM_t *me);
 
 void ui_show_slot_serial_detail(uint8_t slot_number);
 void ui_show_slot_detail_panel(bool show);
