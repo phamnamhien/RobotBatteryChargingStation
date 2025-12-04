@@ -36,7 +36,7 @@
 extern "C" {
 #endif
 
-
+#define BMS_TIMEOUT_MAX_COUNT  3
 
 
 typedef enum {
@@ -116,7 +116,9 @@ typedef enum {
     HSME_MODBUS_GET_SLOT_3_DATA,
     HSME_MODBUS_GET_SLOT_4_DATA,
     HSME_MODBUS_GET_SLOT_5_DATA,
-
+    HSME_MODBUS_GET_STATION_STATE_DATA,
+    HSME_MODBUS_CONNECTED,
+    HSME_MODBUS_NOTCONNECTED,
 
     HSME_CHANGE_SCR_MAIN_TO_SETTING,
     HSME_CHANGE_SCR_SETTING_TO_MAIN,
@@ -134,8 +136,10 @@ typedef enum {
 typedef struct {
 	HSM parent;
 	
-	BMS_Data_t bms_data[TOTAL_SLOT];
-    BMS_Information_t bms_info;
+	volatile BMS_Data_t bms_data[TOTAL_SLOT];
+    volatile BMS_Information_t bms_info;
+
+    volatile uint8_t is_bms_not_connected;
 } DeviceHSM_t;
 
 
@@ -152,6 +156,7 @@ void ui_show_slot_detail_panel(bool show);
 void ui_update_all_slot_details(DeviceHSM_t *me, uint8_t slot_index);
 void ui_clear_all_slot_details(void);
 
+void ui_show_main_not_connect(bool show);
 
 
 

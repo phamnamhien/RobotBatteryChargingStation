@@ -220,13 +220,23 @@ void ui_update_main_slot_voltage(DeviceHSM_t *me, int8_t slot_index)
 {
     if (slot_index >= TOTAL_SLOT) return;
     
+    // ✅ THÊM LOG
+    ESP_LOGI("UI_HELPERS", "📺 Updating UI for slot_index=%d", slot_index);
+    ESP_LOGI("UI_HELPERS", "   Reading from bms_data[%d].stack_volt = %d", 
+             slot_index, me->bms_data[slot_index].stack_volt);
+    
     lv_obj_t *labels[] = {
         ui_lbMainVoltageSlot1, ui_lbMainVoltageSlot2, ui_lbMainVoltageSlot3,
         ui_lbMainVoltageSlot4, ui_lbMainVoltageSlot5
     };
     
+    // ✅ IN RA ĐỊA CHỈ LABEL
+    ESP_LOGI("UI_HELPERS", "   Writing to UI label[%d] = %p", slot_index, labels[slot_index]);
+    
     char buf[16];
     snprintf(buf, sizeof(buf), "%.3fV", me->bms_data[slot_index].stack_volt / 1000.0f);
+    
+    ESP_LOGI("UI_HELPERS", "   Display text: %s", buf);
     
     if (ui_lock(-1)) {
         lv_label_set_text(labels[slot_index], buf);
@@ -331,7 +341,21 @@ void ui_show_slot_detail_panel(bool show)
 
 
 
-
+void ui_show_main_not_connect(bool show)
+{
+    static bool last_state = false;
+    if (show == last_state) return;  // Skip nếu không đổi
+    
+    if (ui_lock(-1)) {
+        if (show) {
+            lv_obj_clear_flag(ui_imgMainNotConnect, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(ui_imgMainNotConnect, LV_OBJ_FLAG_HIDDEN);
+        }
+        last_state = show;
+        ui_unlock();
+    }
+}
 
 
 

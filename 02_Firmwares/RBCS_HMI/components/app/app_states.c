@@ -134,6 +134,12 @@ app_state_main_common_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_CHANGE_SCR_MAIN_TO_SETTING:
             HSM_Tran((HSM *)This, &app_state_setting, NULL, NULL);
             break;
+        case HSME_MODBUS_CONNECTED:
+            ui_show_main_not_connect(false);
+            break;    
+        case HSME_MODBUS_NOTCONNECTED:
+            ui_show_main_not_connect(true);
+            break;
         default:
             return event;
     }
@@ -145,6 +151,19 @@ app_state_main_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_ENTRY:
             ui_load_screen(ui_scrMain);
             ui_show_slot_serial_detail(0);
+            ui_show_slot_detail_panel(false);
+            
+            // ✅ IN RA ĐỊA CHỈ CÁC UI LABELS
+            ESP_LOGI(TAG, "===========================================");
+            ESP_LOGI(TAG, "  📺 UI LABEL ADDRESSES");
+            ESP_LOGI(TAG, "===========================================");
+            ESP_LOGI(TAG, "  ui_lbMainVoltageSlot1 @ %p", ui_lbMainVoltageSlot1);
+            ESP_LOGI(TAG, "  ui_lbMainVoltageSlot2 @ %p", ui_lbMainVoltageSlot2);
+            ESP_LOGI(TAG, "  ui_lbMainVoltageSlot3 @ %p", ui_lbMainVoltageSlot3);
+            ESP_LOGI(TAG, "  ui_lbMainVoltageSlot4 @ %p", ui_lbMainVoltageSlot4);
+            ESP_LOGI(TAG, "  ui_lbMainVoltageSlot5 @ %p", ui_lbMainVoltageSlot5);
+            ESP_LOGI(TAG, "===========================================");
+
             ESP_LOGI(TAG, "Entered Main State");
             break;
         case HSME_INIT:
