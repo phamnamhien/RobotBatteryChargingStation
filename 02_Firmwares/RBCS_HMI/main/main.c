@@ -150,39 +150,57 @@ void modbus_poll_task(void *arg)
     while (1) {
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 0, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_1);
+            ESP_LOGI(TAG, "Slot 1 data synced");
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_1_DATA, NULL);
+        } else {
+            ESP_LOGW(TAG, "Failed to read Slot 1 data");
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(200));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 100, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_2);
+            ESP_LOGI(TAG, "Slot 2 data synced");
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_2_DATA, NULL);
+        } else {
+            ESP_LOGW(TAG, "Failed to read Slot 2 data");
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(200));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 200, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_3);
+            ESP_LOGI(TAG, "Slot 3 data synced");
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_3_DATA, NULL);
+        } else {
+            ESP_LOGW(TAG, "Failed to read Slot 3 data");
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(200));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 300, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_4);
+            ESP_LOGI(TAG, "Slot 4 data synced");
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_4_DATA, NULL);
+        } else {
+            ESP_LOGW(TAG, "Failed to read Slot 4 data");
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(200));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 400, 50, holding_regs) == ESP_OK) {
             modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_5);
+            ESP_LOGI(TAG, "Slot 5 data synced");
             HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_5_DATA, NULL);
+        } else {
+            ESP_LOGW(TAG, "Failed to read Slot 5 data");
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(200));
 
         if (modbus_master_read_holding_registers(APP_MODBUS_SLAVE_ID, 1000, 50, holding_regs) == ESP_OK) {
-            modbus_battery_sync_data(&device, holding_regs, IDX_SLOT_5);
-            HSM_Run((HSM *)&device, HSME_MODBUS_GET_SLOT_5_DATA, NULL);
+            // Sync state data if needed
+            ESP_LOGI(TAG, "STATION STATE data synced");
+//            HSM_Run((HSM *)&device, HSME_MODBUS_GET_STATE_DATA, NULL);
+        } else {
+            ESP_LOGW(TAG, "Failed to read STATION STATE data");
         }
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(200));
 
     }
 }

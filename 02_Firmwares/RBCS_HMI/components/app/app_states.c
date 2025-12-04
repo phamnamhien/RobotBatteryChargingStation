@@ -4,6 +4,7 @@
 static const char *TAG = "HSM";
 
 static HSM_EVENT app_state_loading_handler(HSM *This, HSM_EVENT event, void *param);
+static HSM_EVENT app_state_main_common_handler(HSM *This, HSM_EVENT event, void *param);
 static HSM_EVENT app_state_main_handler(HSM *This, HSM_EVENT event, void *param);
 static HSM_EVENT app_state_main_slot_1_handler(HSM *This, HSM_EVENT event, void *param);
 static HSM_EVENT app_state_main_slot_2_handler(HSM *This, HSM_EVENT event, void *param);
@@ -18,6 +19,7 @@ static void blink_1s_timer_callback(void *arg);
 
 
 static HSM_STATE app_state_loading;
+static HSM_STATE app_state_main_common;
 static HSM_STATE app_state_main;
 static HSM_STATE app_state_main_slot_1;
 static HSM_STATE app_state_main_slot_2;
@@ -44,12 +46,14 @@ app_state_hsm_init(DeviceHSM_t *me) {
                                  me));
 
     HSM_STATE_Create(&app_state_loading, "s_loading", app_state_loading_handler, NULL);
-    HSM_STATE_Create(&app_state_main, "s_main", app_state_main_handler, NULL);
-    HSM_STATE_Create(&app_state_main_slot_1, "s_main_sl1", app_state_main_slot_1_handler, NULL);
-    HSM_STATE_Create(&app_state_main_slot_2, "s_main_sl2", app_state_main_slot_2_handler, NULL);
-    HSM_STATE_Create(&app_state_main_slot_3, "s_main_sl3", app_state_main_slot_3_handler, NULL);
-    HSM_STATE_Create(&app_state_main_slot_4, "s_main_sl4", app_state_main_slot_4_handler, NULL);
-    HSM_STATE_Create(&app_state_main_slot_5, "s_main_sl5", app_state_main_slot_5_handler, NULL);
+
+    HSM_STATE_Create(&app_state_main_common, "s_main_com", app_state_main_common_handler, NULL);
+    HSM_STATE_Create(&app_state_main, "s_main", app_state_main_handler, &app_state_main_common);
+    HSM_STATE_Create(&app_state_main_slot_1, "s_main_sl1", app_state_main_slot_1_handler, &app_state_main_common);
+    HSM_STATE_Create(&app_state_main_slot_2, "s_main_sl2", app_state_main_slot_2_handler, &app_state_main_common);
+    HSM_STATE_Create(&app_state_main_slot_3, "s_main_sl3", app_state_main_slot_3_handler, &app_state_main_common);
+    HSM_STATE_Create(&app_state_main_slot_4, "s_main_sl4", app_state_main_slot_4_handler, &app_state_main_common);
+    HSM_STATE_Create(&app_state_main_slot_5, "s_main_sl5", app_state_main_slot_5_handler, &app_state_main_common);
     HSM_STATE_Create(&app_state_setting, "s_setting", app_state_setting_handler, NULL);
 
     HSM_Create((HSM *)me, "app", &app_state_loading);
@@ -73,7 +77,7 @@ app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
             ticks_stop(blink_1s_timer);
             break;
         case HSME_LOADING_COUNT_TIMER:
-            loading_count++;
+            loading_count+=10;
             if (loading_count > 100) {
                 HSM_Tran((HSM *)This, &app_state_main, NULL, NULL);
                 ESP_LOGI(TAG, "Loading Done, transitioning to Idle State");
@@ -91,16 +95,16 @@ app_state_loading_handler(HSM *This, HSM_EVENT event, void *param) {
 }
 
 static HSM_EVENT 
-app_state_main_handler(HSM *This, HSM_EVENT event, void *param) {
+app_state_main_common_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
-            ui_load_screen(ui_scrMain);
-            ui_show_slot_serial_detail(0);
-            ESP_LOGI(TAG, "Entered Main State");
+
             break;
         case HSME_INIT:
+
             break;
         case HSME_EXIT:
+
             break;
         case HSME_MODBUS_GET_SLOT_1_DATA:
             ui_update_main_slot_voltage((DeviceHSM_t *)This, IDX_SLOT_1);
@@ -127,6 +131,26 @@ app_state_main_handler(HSM *This, HSM_EVENT event, void *param) {
             ui_update_main_battery_percent((DeviceHSM_t *)This, IDX_SLOT_5);
             ui_update_main_slot_capacity((DeviceHSM_t *)This, IDX_SLOT_5);
             break;
+        case HSME_CHANGE_SCR_MAIN_TO_SETTING:
+            HSM_Tran((HSM *)This, &app_state_setting, NULL, NULL);
+            break;
+        default:
+            return event;
+    }
+    return 0;
+}   
+static HSM_EVENT 
+app_state_main_handler(HSM *This, HSM_EVENT event, void *param) {
+    switch (event) {
+        case HSME_ENTRY:
+            ui_load_screen(ui_scrMain);
+            ui_show_slot_serial_detail(0);
+            ESP_LOGI(TAG, "Entered Main State");
+            break;
+        case HSME_INIT:
+            break;
+        case HSME_EXIT:
+            break;
         case HSME_MAIN_SLOT_1_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_1, NULL, NULL);
             break;
@@ -141,9 +165,6 @@ app_state_main_handler(HSM *This, HSM_EVENT event, void *param) {
             break;
         case HSME_MAIN_SLOT_5_CLICKED:
             HSM_Tran((HSM *)This, &app_state_main_slot_5, NULL, NULL);
-            break;
-        case HSME_CHANGE_SCR_MAIN_TO_SETTING:
-            HSM_Tran((HSM *)This, &app_state_setting, NULL, NULL);
             break;
         default:
             return event;
@@ -166,7 +187,7 @@ app_state_main_slot_1_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_EXIT:
             ui_set_button_color(ui_btMainSlot1, BTN_COLOR_NORMAL);
             ui_show_slot_serial_detail(0);
-            ui_show_slot_detail_panel(false);
+            //ui_show_slot_detail_panel(false);
             break;
         case HSME_MODBUS_GET_SLOT_1_DATA:
             ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_1);
@@ -209,7 +230,7 @@ app_state_main_slot_2_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_EXIT:
             ui_set_button_color(ui_btMainSlot2, BTN_COLOR_NORMAL);
             ui_show_slot_serial_detail(0);
-            ui_show_slot_detail_panel(false);
+            // ui_show_slot_detail_panel(false);
             break;
         case HSME_MODBUS_GET_SLOT_2_DATA:
             ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_2);
@@ -252,7 +273,7 @@ app_state_main_slot_3_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_EXIT:
             ui_set_button_color(ui_btMainSlot3, BTN_COLOR_NORMAL);
             ui_show_slot_serial_detail(0);
-            ui_show_slot_detail_panel(false);
+            // ui_show_slot_detail_panel(false);
             break;
         case HSME_MODBUS_GET_SLOT_3_DATA:
             ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_3);
@@ -295,7 +316,7 @@ app_state_main_slot_4_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_EXIT:
             ui_set_button_color(ui_btMainSlot4, BTN_COLOR_NORMAL);
             ui_show_slot_serial_detail(0);
-            ui_show_slot_detail_panel(false);
+            // ui_show_slot_detail_panel(false);
             break;
         case HSME_MODBUS_GET_SLOT_4_DATA:
             ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_4);
@@ -338,7 +359,7 @@ app_state_main_slot_5_handler(HSM *This, HSM_EVENT event, void *param) {
         case HSME_EXIT:
             ui_set_button_color(ui_btMainSlot5, BTN_COLOR_NORMAL);
             ui_show_slot_serial_detail(0);
-            ui_show_slot_detail_panel(false);
+            // ui_show_slot_detail_panel(false);
             break;
         case HSME_MODBUS_GET_SLOT_5_DATA:
             ui_update_all_slot_details((DeviceHSM_t *)This, IDX_SLOT_5);
@@ -372,6 +393,7 @@ app_state_setting_handler(HSM *This, HSM_EVENT event, void *param) {
     switch (event) {
         case HSME_ENTRY:
             ui_load_screen(ui_scrSetting);
+            ui_show_slot_detail_panel(false);
             ESP_LOGI(TAG, "Entered Setting State");
             break;
         case HSME_INIT:
