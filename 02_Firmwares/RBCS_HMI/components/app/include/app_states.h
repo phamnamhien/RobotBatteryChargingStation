@@ -21,7 +21,7 @@
 #include "hsm.h"
 #include "esp_timer.h"
 #include "esp_ticks.h"
-#include "app_io.h"
+#include "app_common.h"
 #include "ui_support.h"
 
 #include "lvgl.h"

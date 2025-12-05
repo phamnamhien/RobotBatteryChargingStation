@@ -396,6 +396,7 @@ void modbus_poll_task(void *arg)
             && is_data_not_received[TOTAL_SLOT]) {
             bms_connect_counter++;
             if (bms_connect_counter >= BMS_TIMEOUT_MAX_COUNT) {
+                bms_connect_counter = BMS_TIMEOUT_MAX_COUNT
                 device.is_bms_not_connected = 1;
                 ESP_LOGW(TAG, "BMS not connected!");
                 HSM_Run((HSM *)&device, HSME_MODBUS_NOTCONNECTED, NULL);   

@@ -88,11 +88,11 @@ uint8_t ReadModbusAddress(void)
 {
     uint8_t addr = 0;
 
-    if (!HAL_GPIO_ReadPin(ADDR0_GPIO_Port, ADDR0_Pin)) addr |= (1<<0);
-    if (!HAL_GPIO_ReadPin(ADDR1_GPIO_Port, ADDR1_Pin)) addr |= (1<<1);
+    if (!HAL_GPIO_ReadPin(ADDR4_GPIO_Port, ADDR4_Pin)) addr |= (1<<0);
+    if (!HAL_GPIO_ReadPin(ADDR3_GPIO_Port, ADDR3_Pin)) addr |= (1<<1);
     if (!HAL_GPIO_ReadPin(ADDR2_GPIO_Port, ADDR2_Pin)) addr |= (1<<2);
-    if (!HAL_GPIO_ReadPin(ADDR3_GPIO_Port, ADDR3_Pin)) addr |= (1<<3);
-    if (!HAL_GPIO_ReadPin(ADDR4_GPIO_Port, ADDR4_Pin)) addr |= (1<<4);
+    if (!HAL_GPIO_ReadPin(ADDR1_GPIO_Port, ADDR1_Pin)) addr |= (1<<3);
+    if (!HAL_GPIO_ReadPin(ADDR0_GPIO_Port, ADDR0_Pin)) addr |= (1<<4);
 
     return (addr == 0) ? 1 : addr;  // Nếu = 0 thì dùng địa chỉ 1
 }
@@ -173,7 +173,6 @@ void StartDefaultTask(void *argument)
 	osSemaphoreAcquire(binsemaModbusSlaveHandle, 0);
 
 	device.modbus_address = ReadModbusAddress();
-	device.modbus_address = 0;	// for test
 	hsmTimerInit();
 	default_parameter_init(&device);
 	app_states_hsm_init(&device);

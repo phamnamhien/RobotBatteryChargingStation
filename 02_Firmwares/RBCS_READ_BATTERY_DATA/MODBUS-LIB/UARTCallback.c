@@ -100,29 +100,34 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
+    int i;
 
- int i;
+    for (i = 0; i < numberHandlers; i++)
+    {
+        if (mHandlers[i]->port == huart)
+        {
+            // Xóa tất cả cờ lỗi
+            __HAL_UART_CLEAR_OREFLAG(huart);
+            __HAL_UART_CLEAR_FEFLAG(huart);
+            __HAL_UART_CLEAR_NEFLAG(huart);
+            __HAL_UART_CLEAR_PEFLAG(huart);
 
- for (i = 0; i < numberHandlers; i++ )
- {
-    	if (mHandlers[i]->port == huart  )
-    	{
+            if(mHandlers[i]->xTypeHW == USART_HW_DMA)
+            {
+                HAL_UART_DMAStop(mHandlers[i]->port);
 
-    		if(mHandlers[i]->xTypeHW == USART_HW_DMA)
-    		{
-    			while(HAL_UARTEx_ReceiveToIdle_DMA(mHandlers[i]->port, mHandlers[i]->xBufferRX.uxBuffer, MAX_BUFFER) != HAL_OK)
-    		    {
-    					HAL_UART_DMAStop(mHandlers[i]->port);
-   				}
-				__HAL_DMA_DISABLE_IT(mHandlers[i]->port->hdmarx, DMA_IT_HT); // we don't need half-transfer interrupt
+                // Khởi động lại DMA
+                if(HAL_UARTEx_ReceiveToIdle_DMA(mHandlers[i]->port,
+                    mHandlers[i]->xBufferRX.uxBuffer, MAX_BUFFER) == HAL_OK)
+                {
+                    __HAL_DMA_DISABLE_IT(mHandlers[i]->port->hdmarx, DMA_IT_HT);
+                }
+            }
 
-    		}
-
-    		break;
-    	}
-   }
+            break;
+        }
+    }
 }
-
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
