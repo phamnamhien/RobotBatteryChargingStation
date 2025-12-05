@@ -256,7 +256,6 @@ void StartReadBatteryTask(void *argument)
   /* Infinite loop */
   uint32_t u32NotificationValue;
   static uint16_t timeout_count = 0;
-
   osSemaphoreAcquire(binsemaModbusMasterHandle, osWaitForever);
 
   device.telegramMaster[TELE_MASTER_READ_FULL_BAT_DATA].u8id = 0x10; // slave address
@@ -264,7 +263,6 @@ void StartReadBatteryTask(void *argument)
   device.telegramMaster[TELE_MASTER_READ_FULL_BAT_DATA].u16RegAdd = 0x00; // start address in slave
   device.telegramMaster[TELE_MASTER_READ_FULL_BAT_DATA].u16CoilsNo = TOTAL_BAT_REGISTERS; // number of elements (coils or registers) to read
   device.telegramMaster[TELE_MASTER_READ_FULL_BAT_DATA].u16reg = device.dataModbusMaster; // pointer to a memory array
-
   for(;;)
   {
 	if(device.dataModbusSlave[REG_STA_IS_PIN_IN_SLOT] == SLOT_FULL) {
@@ -302,7 +300,8 @@ void StartCommTask(void *argument)
   osSemaphoreAcquire(binsemaModbusSlaveHandle, osWaitForever);
   for(;;)
   {
-
+	xSemaphoreTake(device.handlerModbusSlave.ModBusSphrHandle , portMAX_DELAY);
+	xSemaphoreGive(device.handlerModbusSlave.ModBusSphrHandle);
 	osDelay(100);
   }
   /* USER CODE END StartCommTask */
@@ -313,7 +312,7 @@ void StartCommTask(void *argument)
 void ModbusSlave_TxCompleteCallback(modbusHandler_t *modH)
 {
 	if(modH == &device.handlerModbusSlave) {
-		HSM_Run((HSM *)&device, HSME_COMM_RECEIVED_OK, 0);
+    HSM_Run((HSM *)&device, HSME_COMM_RECEIVED_OK, 0);
 	}
 }
 /* USER CODE END Application */
