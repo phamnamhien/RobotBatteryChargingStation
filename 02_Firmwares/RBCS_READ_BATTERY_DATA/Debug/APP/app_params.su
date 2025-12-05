@@ -1,0 +1,5 @@
+../APP/app_params.c:14:6:default_parameter_init	16	static
+../APP/app_params.c:31:10:BaudrateCodeToValue	16	static
+../APP/app_params.c:54:9:BaudrateValueToCode	16	static
+../APP/app_params.c:77:19:UART_Reconfigure	24	static
+../APP/app_params.c:108:19:UART_ReconfigureByCode	24	static

@@ -1,0 +1,5 @@
+../EE/ee.c:133:6:EE_Init	24	static
+../EE/ee.c:197:10:EE_Capacity	4	static
+../EE/ee.c:211:6:EE_Format	32	static
+../EE/ee.c:270:6:EE_Read	16	static
+../EE/ee.c:299:6:EE_Write	32	static

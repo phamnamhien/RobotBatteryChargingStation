@@ -1,0 +1,5 @@
+../EE/ee.c:133:6:EE_Init	4
+../EE/ee.c:197:10:EE_Capacity	1
+../EE/ee.c:211:6:EE_Format	3
+../EE/ee.c:270:6:EE_Read	3
+../EE/ee.c:299:6:EE_Write	7
