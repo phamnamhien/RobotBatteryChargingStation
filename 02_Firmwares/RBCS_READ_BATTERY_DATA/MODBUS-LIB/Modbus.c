@@ -1542,6 +1542,12 @@ void buildException( uint8_t u8exception, modbusHandler_t *modH )
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 #endif
 
+// Weak TxCompleteCallback
+__attribute__((weak)) void ModbusSlave_TxCompleteCallback(modbusHandler_t *modH)
+{
+    // None
+    (void)modH;  // Tránh warning unused parameter
+}
 /**
  * @brief
  * This method transmits u8Buffer to Serial line.
@@ -1710,7 +1716,10 @@ if(modH->xTypeHW != TCP_HW)
      // increase message counter
      modH->u16OutCnt++;
 
-
+     //  CALLBACK
+     if(modH->uModbusType == MB_SLAVE) {
+         ModbusSlave_TxCompleteCallback(modH);
+     }
 }
 
 

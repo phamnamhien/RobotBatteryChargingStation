@@ -3,3 +3,4 @@
 ../Core/Src/freertos.c:167:6:StartDefaultTask	6
 ../Core/Src/freertos.c:253:6:StartReadBatteryTask	4
 ../Core/Src/freertos.c:296:6:StartCommTask	1
+../Core/Src/freertos.c:311:6:ModbusSlave_TxCompleteCallback	2

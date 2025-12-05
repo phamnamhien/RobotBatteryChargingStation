@@ -300,9 +300,7 @@ void StartCommTask(void *argument)
   osSemaphoreAcquire(binsemaModbusSlaveHandle, osWaitForever);
   for(;;)
   {
-	xSemaphoreTake(device.handlerModbusSlave.ModBusSphrHandle , portMAX_DELAY);
-	HSM_Run((HSM *)&device, HSME_COMM_RECEIVED_OK, 0);
-	xSemaphoreGive(device.handlerModbusSlave.ModBusSphrHandle);
+
 	osDelay(100);
   }
   /* USER CODE END StartCommTask */
@@ -310,6 +308,11 @@ void StartCommTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
+void ModbusSlave_TxCompleteCallback(modbusHandler_t *modH)
+{
+	if(modH == &device.handlerModbusSlave) {
+		HSM_Run((HSM *)&device, HSME_COMM_RECEIVED_OK, 0);
+	}
+}
 /* USER CODE END Application */
 
