@@ -16,7 +16,7 @@
 #include "esp_timer.h"
 #include "esp_ticks.h"
 #include "hsm.h"
-#include "app_io.h"
+#include "app_common.h"
 
 
 #ifdef __cplusplus
