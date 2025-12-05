@@ -1,7 +1,8 @@
-../APP/app_states.c:46:6:app_states_hsm_init	16	static
-../APP/app_states.c:65:18:app_state_setting_baudrate_handler	32	static
-../APP/app_states.c:103:18:app_state_run_handler	32	static
-../APP/app_states.c:157:18:app_state_stop_handler	32	static
-../APP/app_states.c:187:1:hsmt_custom_tick_callback	24	static
-../APP/app_states.c:192:1:hsmt_turn_off_led_stt_tick_callback	24	static
-../APP/app_states.c:197:1:hsmt_setting_done_tick_callback	24	static
+../APP/app_states.c:47:6:app_states_hsm_init	16	static
+../APP/app_states.c:67:18:app_state_setting_baudrate_handler	32	static
+../APP/app_states.c:105:18:app_state_run_handler	32	static
+../APP/app_states.c:166:18:app_state_fault_handler	32	static
+../APP/app_states.c:195:18:app_state_bat_not_connected_handler	32	static
+../APP/app_states.c:232:1:hsmt_custom_tick_callback	24	static
+../APP/app_states.c:237:1:hsmt_turn_off_led_stt_tick_callback	24	static
+../APP/app_states.c:242:1:hsmt_setting_done_tick_callback	24	static

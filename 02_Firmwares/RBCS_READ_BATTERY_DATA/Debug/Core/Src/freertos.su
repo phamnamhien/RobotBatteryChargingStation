@@ -2,4 +2,4 @@
 ../Core/Src/freertos.c:112:6:MX_FREERTOS_Init	8	static
 ../Core/Src/freertos.c:167:6:StartDefaultTask	24	static
 ../Core/Src/freertos.c:254:6:StartReadBatteryTask	32	static
-../Core/Src/freertos.c:291:6:StartCommTask	16	static
+../Core/Src/freertos.c:297:6:StartCommTask	16	static

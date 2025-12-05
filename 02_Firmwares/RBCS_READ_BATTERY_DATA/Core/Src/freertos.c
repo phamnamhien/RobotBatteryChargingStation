@@ -236,7 +236,7 @@ void StartDefaultTask(void *argument)
 
 		  HSM_Run((HSM *)&device, HSME_SWITCH_LIMIT_ACTIVE, 0);
 	  } else {
-		  device.dataModbusSlave[BAT_STA_IS_PIN_IN_SLOT] = SLOT_EMPTY;
+		  device.dataModbusSlave[REG_STA_IS_PIN_IN_SLOT] = SLOT_EMPTY;
 		  HSM_Run((HSM *)&device, HSME_SWITCH_LIMIT_PASSTIVE, 0);
 	  }
 	  osDelay(10);
@@ -266,16 +266,22 @@ void StartReadBatteryTask(void *argument)
   device.telegramMaster[TELE_MASTER_READ_FULL_BAT_DATA].u16reg = device.dataModbusMaster; // pointer to a memory array
   for(;;)
   {
-	ModbusQuery(&device.handlerModbusMaster, device.telegramMaster[TELE_MASTER_READ_FULL_BAT_DATA]);
-	u32NotificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-	if(u32NotificationValue != OP_OK_QUERY) {
-		timeout_count = 0;
-	} else {
-		if(++timeout_count >= 5) {
-			timeout_count = 5;
-			HSM_Run((HSM *)&device, HSME_BAT_TIMEOUT, 0);
+	if(device.dataModbusSlave[REG_STA_IS_PIN_IN_SLOT] == SLOT_FULL) {
+		ModbusQuery(&device.handlerModbusMaster, device.telegramMaster[TELE_MASTER_READ_FULL_BAT_DATA]);
+		u32NotificationValue = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		if(u32NotificationValue != OP_OK_QUERY) {
+			timeout_count = 0;
+			HSM_Run((HSM *)&device, HSME_BAT_RECEIVED_OK, 0);
+		} else {
+			if(++timeout_count >= 5) {
+				timeout_count = 5;
+				HSM_Run((HSM *)&device, HSME_BAT_RECEIVED_TIMEOUT, 0);
+			}
 		}
+	} else {
+
 	}
+
     osDelay(100);
   }
   /* USER CODE END StartReadBatteryTask */
