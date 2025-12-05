@@ -29,15 +29,21 @@ extern "C" {
 #define LIMIT_SWITCH_5_PIN          -1
 #define LIMIT_SWITCH_6_PIN          -1
 
+#define MOTOR_DIR_1_PIN                 GPIO_NUM_25
+#define MOTOR_PWM_1_PIN                 GPIO_NUM_26
+#define MOTOR_DIR_2_PIN                 GPIO_NUM_25
+#define MOTOR_PWM_2_PIN                 GPIO_NUM_26
+#define MOTOR_DIR_3_PIN                 GPIO_NUM_25
+#define MOTOR_PWM_3_PIN                 GPIO_NUM_26
+#define MOTOR_1_STEPS_PER_REVOLUTION    200    
+#define MOTOR_2_STEPS_PER_REVOLUTION    200    
+#define MOTOR_3_STEPS_PER_REVOLUTION    200  
+#define MOTOR_1_MAX_SPEED_HZ            5000
+#define MOTOR_2_MAX_SPEED_HZ            5000
+#define MOTOR_3_MAX_SPEED_HZ            5000
 
-#define MOTOR_DIR_1_PIN             GPIO_NUM_25
-#define MOTOR_PWM_1_PIN             GPIO_NUM_26
-#define MOTOR_DIR_2_PIN             GPIO_NUM_25
-#define MOTOR_PWM_2_PIN             GPIO_NUM_26
-#define MOTOR_DIR_3_PIN             GPIO_NUM_25
-#define MOTOR_PWM_3_PIN             GPIO_NUM_26
 
-#define SOLENOID_CTRL_PIN           GPIO_NUM_26
+#define SOLENOID_CTRL_PIN               GPIO_NUM_26
 
 
 

@@ -13,12 +13,15 @@
 #include "nvs_flash.h"
 #include "esp_err.h"
 #include "esp_log.h"
+
+#include "app_common.h"
 #include "modbus_master_manager.h"
 #include "modbus_slave_manager.h"
 #include "esp_timer.h"
 #include "esp_ticks.h"
 #include "hsm.h"
-#include "app_common.h"
+#include "stepper_tb6600.h"
+
 
 #define TOTAL_SLOTS		     	5
 #define REGS_PER_BATTERY		55  
@@ -26,6 +29,14 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifndef LOW
+#define LOW  0
+#endif
+
+#ifndef HIGH
+#define HIGH 1
 #endif
 
 
@@ -86,9 +97,6 @@ typedef enum {
     TOTAL_STA_REGISTERS,
 } SlotRegister_t;
 
-
-
-
 // Cấu trúc lưu dữ liệu mỗi Pin
 typedef struct {
     uint16_t registers[TOTAL_STA_REGISTERS];
@@ -119,13 +127,56 @@ typedef struct {
 
 
 typedef enum {
+    IDX_MOTOR1,
+    IDX_MOTOR2,
+    IDX_MOTOR3,
+    MOTOR_TOTAL,
+} MotorName_t;
+
+typedef enum {
 	HSME_LOOP = HSME_START,
+
+    HSME_MOTOR_1_COMPLETE,
+    HSME_MOTOR_2_COMPLETE,
+    HSME_MOTOR_3_COMPLETE,
+    HSME_LIMIT_SWITCH_1_TRIGGERED,
+    HSME_LIMIT_SWITCH_1_RELEASED,
+    HSME_LIMIT_SWITCH_2_TRIGGERED,
+    HSME_LIMIT_SWITCH_2_RELEASED,
+    HSME_LIMIT_SWITCH_3_TRIGGERED,
+    HSME_LIMIT_SWITCH_3_RELEASED,
 
 	HSME_LOADING_DONE,
 	HSME_SET_TO_ZERO_POSTION,
 
+    
 	HSME_BLINK_1S_TIMER,
 } HSMEvent_t;
+
+typedef enum {
+    MOTOR1_DIR_PUSH = STEPPER_DIR_CW,
+    MOTOR1_DIR_PULL = STEPPER_DIR_CCW,
+} Motor1Direction_t;
+typedef enum {
+    MOTOR2_DIR_PUSH = STEPPER_DIR_CW,
+    MOTOR2_DIR_PULL = STEPPER_DIR_CCW,
+} Motor2Direction_t;
+typedef enum {
+    MOTOR3_DIR_PUSH = STEPPER_DIR_CW,
+    MOTOR3_DIR_PULL = STEPPER_DIR_CCW,
+} Motor3Direction_t;
+typedef enum {
+    LIMIT_SWITCH_1_TRIGGERED = LOW,
+    LIMIT_SWITCH_1_RELEASED = HIGH,
+} LimitSwitch1State_t;
+typedef enum {
+    LIMIT_SWITCH_2_TRIGGERED = LOW,
+    LIMIT_SWITCH_2_RELEASED = HIGH,
+} LimitSwitch2State_t;
+typedef enum {
+    LIMIT_SWITCH_3_TRIGGERED = LOW,
+    LIMIT_SWITCH_3_RELEASED = HIGH,
+} LimitSwitch3State_t;
 
 typedef struct {
 	HSM parent;
@@ -133,6 +184,7 @@ typedef struct {
 	G_System_t g_system;
 	G_Station_Info_t g_station_info;
 
+    stepper_handle_t motor[MOTOR_TOTAL];
 } DeviceHSM_t;
 
 

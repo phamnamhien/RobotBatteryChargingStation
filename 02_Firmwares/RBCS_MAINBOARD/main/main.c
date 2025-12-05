@@ -8,6 +8,34 @@ static const char *TAG = "MAINBOARD";
 #define MAINBOARD_ADDRESS           1   // Địa chỉ của MAINBOARD khi là Slave
 
 
+
+// ============================================
+// Motor Callback Functions
+// ============================================
+void motor1_complete_cb(stepper_handle_t handle, void *user_data)
+{
+    HSM *This = (HSM *)user_data;
+    uint32_t pos = stepper_get_position(handle);
+    ESP_LOGI(TAG, "✅ Motor 1 COMPLETE! Position: %ld", pos);
+    HSM_Run(This, HSME_MOTOR_1_COMPLETE, NULL);
+}
+void motor2_complete_cb(stepper_handle_t handle, void *user_data)
+{
+    HSM *This = (HSM *)user_data;
+    uint32_t pos = stepper_get_position(handle);
+    ESP_LOGI(TAG, "✅ Motor 2 COMPLETE! Position: %ld", pos);
+    HSM_Run(This, HSME_MOTOR_2_COMPLETE, NULL);
+}
+void motor3_complete_cb(stepper_handle_t handle, void *user_data)
+{
+    HSM *This = (HSM *)user_data;
+    uint32_t pos = stepper_get_position(handle);
+    ESP_LOGI(TAG, "✅ Motor 3 COMPLETE! Position: %ld", pos);
+    HSM_Run(This, HSME_MOTOR_3_COMPLETE, NULL);
+}
+
+
+
 // ============================================
 // Utility Functions
 // ============================================
@@ -227,12 +255,14 @@ static void modbus_slave_write_callback(uint8_t reg_type, uint16_t address, uint
 
 void app_main(void)
 {
+    esp_err_t ret;
+
     ESP_LOGI(TAG, "==================================================================");
     ESP_LOGI(TAG, "Starting Robot Battery Charging Station Mainboard firmware...");
     ESP_LOGI(TAG, "==================================================================");
 
     // Initialize NVS
-    esp_err_t ret = nvs_flash_init();
+    ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
@@ -245,13 +275,67 @@ void app_main(void)
         ESP_LOGE(TAG, "❌ Failed to create mutex!");
         return;
     }
-
-    // Initialize ticks system
+    // ============================================
+    // STEP 1: Initialize HSM
+    // ============================================
     ESP_ERROR_CHECK(ticks_init());
 
     app_state_hsm_init(&mainboard);
     // ============================================
-    // STEP 1: Initialize Modbus MASTER
+    // STEP 2: Initialize stepper motors
+    // ============================================
+    ESP_LOGI(TAG, "Initializing stepper motors...");
+    stepper_config_t motor1_config = {
+        .pulse_pin = MOTOR_PWM_1_PIN,
+        .dir_pin = MOTOR_DIR_1_PIN,
+        .enable_pin = -1,
+        .steps_per_revolution = MOTOR_1_STEPS_PER_REVOLUTION,
+        .microstep = STEPPER_MICROSTEP_8,
+        .max_speed_hz = MOTOR_1_MAX_SPEED_HZ,      
+        .accel_steps = 50,          // Toc do tang dan sau 50 buoc dau
+        .complete_cb = motor1_complete_cb,
+        .user_data = &mainboard,
+    };
+    stepper_config_t motor2_config = {
+        .pulse_pin = MOTOR_PWM_2_PIN,
+        .dir_pin = MOTOR_DIR_2_PIN,
+        .enable_pin = -1,
+        .steps_per_revolution = MOTOR_2_STEPS_PER_REVOLUTION,
+        .microstep = STEPPER_MICROSTEP_8,
+        .max_speed_hz = MOTOR_2_MAX_SPEED_HZ,      
+        .accel_steps = 50,          // Toc do tang dan sau 50 buoc dau
+        .complete_cb = motor2_complete_cb,
+        .user_data = &mainboard,
+    };
+    stepper_config_t motor3_config = {
+        .pulse_pin = MOTOR_PWM_3_PIN,
+        .dir_pin = MOTOR_DIR_3_PIN,
+        .enable_pin = -1,
+        .steps_per_revolution = MOTOR_3_STEPS_PER_REVOLUTION,
+        .microstep = STEPPER_MICROSTEP_8,
+        .max_speed_hz = MOTOR_3_MAX_SPEED_HZ,      
+        .accel_steps = 50,          // Toc do tang dan sau 50 buoc dau
+        .complete_cb = motor3_complete_cb,
+        .user_data = &mainboard,
+    };
+    ret = stepper_init(&motor1_config, &mainboard.motor[IDX_MOTOR1]);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init motor 1");
+        return;
+    }
+    ret = stepper_init(&motor2_config, &mainboard.motor[IDX_MOTOR2]);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init motor 2");
+        return;
+    }
+    ret = stepper_init(&motor3_config, &mainboard.motor[IDX_MOTOR2]);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init motor 3");
+        return;
+    }
+
+    // ============================================
+    // STEP3: Initialize Modbus
     // ============================================
     ESP_LOGI(TAG, "[1/3] Initializing Modbus MASTER...");
     modbus_master_config_t master_cfg = {
@@ -271,9 +355,7 @@ void app_main(void)
              master_cfg.uart_port, master_cfg.baudrate,
              master_cfg.tx_pin, master_cfg.rx_pin, master_cfg.rts_pin);    
 
-    // ============================================
-    // STEP 2: Initialize Modbus SLAVE
-    // ============================================
+
     ESP_LOGI(TAG, "[2/3] Initializing Modbus SLAVE...");
     modbus_slave_config_t slave_cfg = {
         .slave_addr = MAINBOARD_ADDRESS,
@@ -297,9 +379,7 @@ void app_main(void)
              slave_cfg.slave_addr, slave_cfg.uart_port, slave_cfg.baudrate,
              slave_cfg.tx_pin, slave_cfg.rx_pin, slave_cfg.rts_pin);
 
-    // ============================================
-    // STEP 3: Khởi tạo dữ liệu mặc định
-    // ============================================
+
     ESP_LOGI(TAG, "[3/3] Initializing default data...");
     for (int i = 0; i < TOTAL_SLOTS; i++) {
         memset(&mainboard.g_system.slot[i], 0, sizeof(Slot_Data_t));
@@ -353,4 +433,5 @@ void app_main(void)
     ESP_LOGI(TAG, "     1000+:   Station Info");
     ESP_LOGI(TAG, "===========================================");
 }
+
 

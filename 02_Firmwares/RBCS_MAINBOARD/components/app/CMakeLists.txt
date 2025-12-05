@@ -10,4 +10,6 @@ idf_component_register(
 
                                     modbus_master_manager  
                                     modbus_slave_manager  
+
+                                    stepper_tb6600
 )
