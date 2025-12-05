@@ -1630,6 +1630,7 @@ void StartReadBatteryTask(void *argument)
   /* Infinite loop */
   uint32_t u32NotificationValue;
   static uint16_t timeout_count = 0;
+
   osSemaphoreAcquire(binsemaModbusMasterHandle, osWaitForever);
  8000bd8:	4b28      	ldr	r3, [pc, #160]	@ (8000c7c <StartReadBatteryTask+0xac>)
  8000bda:	681b      	ldr	r3, [r3, #0]
@@ -1657,6 +1658,7 @@ void StartReadBatteryTask(void *argument)
  8000c06:	4b1e      	ldr	r3, [pc, #120]	@ (8000c80 <StartReadBatteryTask+0xb0>)
  8000c08:	4a1e      	ldr	r2, [pc, #120]	@ (8000c84 <StartReadBatteryTask+0xb4>)
  8000c0a:	f8c3 21c4 	str.w	r2, [r3, #452]	@ 0x1c4
+
   for(;;)
   {
 	if(device.dataModbusSlave[REG_STA_IS_PIN_IN_SLOT] == SLOT_FULL) {
