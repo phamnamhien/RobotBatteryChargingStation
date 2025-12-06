@@ -192,7 +192,7 @@ void StartDefaultTask(void *argument)
 		}
 	} else {
 
-
+		/* Master initialization */
 		device.handlerModbusMaster.uModbusType = MB_MASTER;
 		device.handlerModbusMaster.port =  &MB_BAT_UART;
 		device.handlerModbusMaster.u8id = 0; // For master it must be 0
@@ -277,8 +277,6 @@ void StartReadBatteryTask(void *argument)
 				HSM_Run((HSM *)&device, HSME_BAT_RECEIVED_TIMEOUT, 0);
 			}
 		}
-	} else {
-
 	}
 
     osDelay(100);

@@ -122,9 +122,15 @@ static HSM_EVENT app_state_run_handler(HSM *This, HSM_EVENT event, void *param) 
         	me->dataModbusSlave[REG_STA_IS_PIN_IN_SLOT] = SLOT_FULL;
         	break;
         case HSME_SWITCH_LIMIT_PASSTIVE:
+        	for(uint16_t i = 0; i < TOTAL_BAT_REGISTERS; i++) {
+        		me->dataModbusSlave[i] = 0;
+        	}
         	me->dataModbusSlave[REG_STA_IS_PIN_IN_SLOT] = SLOT_EMPTY;
         	break;
         case HSME_COMM_RECEIVED_OK:
+        	for(uint16_t i = 0; i < TOTAL_BAT_REGISTERS; i++) {
+        		me->dataModbusSlave[i] = me->dataModbusMaster[i];
+        	}
         	// Check Emergency
         	if(me->dataModbusSlave[REG_STA_IS_EMERGENCY_STOP]) {
         		HAL_GPIO_WritePin(EMERGENCY_GPIO_Port, EMERGENCY_Pin, EM_ACTIVE);
@@ -144,6 +150,9 @@ static HSM_EVENT app_state_run_handler(HSM *This, HSM_EVENT event, void *param) 
         	break;
 
         case HSME_BAT_RECEIVED_TIMEOUT:
+        	for(uint16_t i = 0; i < TOTAL_BAT_REGISTERS; i++) {
+        		me->dataModbusSlave[i] = 0;
+        	}
         	me->dataModbusSlave[REG_STA_IS_PIN_TIMEOUT] = 1;
         	HSM_Tran(This, &app_state_bat_not_connected, 0, NULL);
         	break;

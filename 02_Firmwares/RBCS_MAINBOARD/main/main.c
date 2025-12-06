@@ -425,11 +425,11 @@ void app_main(void)
     ESP_LOGI(TAG, "  Slave:  Serving HMI (Addr %d)", MAINBOARD_ADDRESS);
     ESP_LOGI(TAG, "");
     ESP_LOGI(TAG, "  📋 Register Map for HMI:");
-    ESP_LOGI(TAG, "     0-49:    Battery 1");
-    ESP_LOGI(TAG, "     50-99:   Battery 2");
-    ESP_LOGI(TAG, "     100-149: Battery 3");
-    ESP_LOGI(TAG, "     150-199: Battery 4");
-    ESP_LOGI(TAG, "     200-249: Battery 5");
+    ESP_LOGI(TAG, "     0-55:    Battery 1");
+    ESP_LOGI(TAG, "     100-155:   Battery 2");
+    ESP_LOGI(TAG, "     200-255: Battery 3");
+    ESP_LOGI(TAG, "     300-355: Battery 4");
+    ESP_LOGI(TAG, "     400-455: Battery 5");
     ESP_LOGI(TAG, "     1000+:   Station Info");
     ESP_LOGI(TAG, "===========================================");
 }
