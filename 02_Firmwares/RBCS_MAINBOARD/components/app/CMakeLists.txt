@@ -12,4 +12,5 @@ idf_component_register(
                                     modbus_slave_manager  
 
                                     stepper_tb6600
+                                    limit_switch
 )

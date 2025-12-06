@@ -1,24 +1,3 @@
-/**
- * @file stepper_tb6600.h
- * @brief TB6600 Stepper Motor Driver Library for ESP-IDF
- * 
- * This library provides high-performance control of stepper motors using
- * the TB6600 driver with PWM-based pulse generation for high speeds.
- * 
- * Features:
- * - PWM-based pulse generation (supports high speed)
- * - Non-blocking operation (async only)
- * - Multiple motor support
- * - Position tracking
- * - Completion callbacks
- * - Direction control
- * - Enable/disable control
- * 
- * @author Your Name
- * @date 2025
- * @license MIT
- */
-
 #ifndef STEPPER_TB6600_H
 #define STEPPER_TB6600_H
 
@@ -32,231 +11,123 @@ extern "C" {
 #endif
 
 /**
- * @brief Microstep configuration for TB6600 driver
- * 
- * Set these values using DIP switches SW1-SW3 on TB6600:
- * - MICROSTEP_1:  SW1=ON,  SW2=ON,  SW3=OFF (200 steps/rev for 200-step motor)
- * - MICROSTEP_2:  SW1=ON,  SW2=OFF, SW3=ON  (400 steps/rev)
- * - MICROSTEP_4:  SW1=ON,  SW2=OFF, SW3=OFF (800 steps/rev)
- * - MICROSTEP_8:  SW1=OFF, SW2=ON,  SW3=OFF (1600 steps/rev)
- * - MICROSTEP_16: SW1=OFF, SW2=OFF, SW3=ON  (3200 steps/rev)
- * - MICROSTEP_32: SW1=OFF, SW2=OFF, SW3=OFF (6400 steps/rev)
+ * @brief Cấu hình microstep cho TB6600
  */
 typedef enum {
-    STEPPER_MICROSTEP_1 = 1,    /**< Full step mode */
-    STEPPER_MICROSTEP_2 = 2,    /**< Half step mode */
-    STEPPER_MICROSTEP_4 = 4,    /**< Quarter step mode */
-    STEPPER_MICROSTEP_8 = 8,    /**< 1/8 step mode */
-    STEPPER_MICROSTEP_16 = 16,  /**< 1/16 step mode */
-    STEPPER_MICROSTEP_32 = 32   /**< 1/32 step mode */
+    MICROSTEP_1 = 1,
+    MICROSTEP_2A = 2,
+    MICROSTEP_2B = 2,
+    MICROSTEP_4 = 4,
+    MICROSTEP_8 = 8,
+    MICROSTEP_16 = 16,
+    MICROSTEP_32 = 32
 } stepper_microstep_t;
 
 /**
- * @brief Motor rotation direction
+ * @brief Chiều quay
  */
 typedef enum {
-    STEPPER_DIR_CW = 0,   /**< Clockwise rotation */
-    STEPPER_DIR_CCW = 1   /**< Counter-clockwise rotation */
+    STEPPER_DIR_CW = 0,   // Clockwise
+    STEPPER_DIR_CCW = 1   // Counter-clockwise
 } stepper_direction_t;
 
 /**
- * @brief Motor operation mode
- */
-typedef enum {
-    STEPPER_MODE_IDLE = 0,      /**< Motor is idle */
-    STEPPER_MODE_POSITION,      /**< Position control mode (move to target) */
-    STEPPER_MODE_VELOCITY       /**< Velocity control mode (continuous run) */
-} stepper_mode_t;
-
-/**
- * @brief Stepper motor handle (opaque pointer)
+ * @brief Handle cho stepper motor (forward declaration)
  */
 typedef struct stepper_motor_t* stepper_handle_t;
 
 /**
- * @brief Callback function type called when motor completes movement
- * 
- * @param handle Motor handle
- * @param user_data User-defined data passed during initialization
+ * @brief Callback khi motor hoàn thành di chuyển
+ * @param handle Handle motor
+ * @param user_data Dữ liệu người dùng
  */
 typedef void (*stepper_complete_cb_t)(stepper_handle_t handle, void *user_data);
 
 /**
- * @brief Stepper motor configuration structure
+ * @brief Cấu hình stepper motor
  */
 typedef struct {
-    gpio_num_t pulse_pin;           /**< GPIO pin for PULSE signal (required) */
-    gpio_num_t dir_pin;             /**< GPIO pin for DIRECTION signal (required) */
-    gpio_num_t enable_pin;          /**< GPIO pin for ENABLE signal (-1 to disable) */
-    
-    uint16_t steps_per_revolution;  /**< Motor steps per revolution (typically 200) */
-    stepper_microstep_t microstep;  /**< Microstepping mode (must match DIP switches) */
-    
-    uint32_t max_speed_hz;          /**< Maximum pulse frequency in Hz (typical: 20000-50000) */
-    uint32_t accel_steps;           /**< Acceleration/deceleration steps (0 = no accel) */
-    
-    stepper_complete_cb_t complete_cb;  /**< Callback on movement completion (NULL = none) */
-    void *user_data;                    /**< User data passed to callback */
+    gpio_num_t pulse_pin;           // Chân PUL (bắt buộc)
+    gpio_num_t dir_pin;             // Chân DIR (bắt buộc)
+    gpio_num_t enable_pin;          // Chân EN (-1 nếu không dùng)
+    uint16_t steps_per_revolution;  // Bước/vòng của motor (thường 200)
+    stepper_microstep_t microstep;  // Chế độ microstep
+    uint32_t max_speed_rpm;         // Tốc độ tối đa (RPM)
+    uint32_t accel_steps;           // Số bước để tăng/giảm tốc (0 = không gia tốc)
+    stepper_complete_cb_t complete_cb;  // Callback khi hoàn thành (NULL nếu không dùng)
+    void *user_data;                // Dữ liệu người dùng cho callback
 } stepper_config_t;
 
 /**
- * @brief Initialize stepper motor driver
- * 
- * This function allocates resources, configures GPIO pins and PWM channels.
- * 
- * @param config Pointer to motor configuration structure
- * @param[out] handle Pointer to receive motor handle
- * @return 
- *     - ESP_OK: Success
- *     - ESP_ERR_INVALID_ARG: Invalid parameters
- *     - ESP_ERR_NO_MEM: Out of memory
- *     - ESP_FAIL: PWM or GPIO configuration failed
+ * @brief Khởi tạo một động cơ stepper
  */
 esp_err_t stepper_init(const stepper_config_t *config, stepper_handle_t *handle);
 
 /**
- * @brief Deinitialize and free motor resources
- * 
- * Stops motor if running, releases PWM channels and frees memory.
- * 
- * @param handle Motor handle
- * @return ESP_OK on success
+ * @brief Xóa motor
  */
 esp_err_t stepper_deinit(stepper_handle_t handle);
 
 /**
- * @brief Enable or disable motor driver
- * 
- * When disabled (enable=false), motor enters free-running state.
- * Only works if enable_pin was configured (!= -1).
- * 
- * @param handle Motor handle
- * @param enable true to enable, false to disable
- * @return ESP_OK on success
+ * @brief Bật/tắt motor (EN pin)
  */
 esp_err_t stepper_enable(stepper_handle_t handle, bool enable);
 
 /**
- * @brief Set motor rotation direction
- * 
- * @param handle Motor handle
- * @param dir Direction (CW or CCW)
- * @return ESP_OK on success
+ * @brief Đặt hướng quay
  */
 esp_err_t stepper_set_direction(stepper_handle_t handle, stepper_direction_t dir);
 
 /**
- * @brief Move motor by specified number of steps (non-blocking)
- * 
- * Starts motor movement and returns immediately. Use callback or
- * stepper_is_running() to detect completion.
- * 
- * @param handle Motor handle
- * @param steps Number of steps to move (negative for reverse direction)
- * @param speed_rpm Target speed in RPM (will be clamped to max_speed_hz)
- * @return 
- *     - ESP_OK: Movement started
- *     - ESP_ERR_INVALID_STATE: Motor already running
- *     - ESP_FAIL: Failed to start PWM
+ * @brief Quay một số bước (blocking)
  */
 esp_err_t stepper_move_steps(stepper_handle_t handle, int32_t steps, uint32_t speed_rpm);
 
 /**
- * @brief Move motor by specified angle in degrees (non-blocking)
- * 
- * @param handle Motor handle
- * @param degrees Angle in degrees (negative for reverse)
- * @param speed_rpm Target speed in RPM
- * @return Same as stepper_move_steps()
+ * @brief Quay một số bước (non-blocking)
+ * Return ngay, motor quay trong task riêng. Callback được gọi khi hoàn thành.
+ */
+esp_err_t stepper_move_steps_async(stepper_handle_t handle, int32_t steps, uint32_t speed_rpm);
+
+/**
+ * @brief Quay một góc (blocking)
  */
 esp_err_t stepper_move_degrees(stepper_handle_t handle, float degrees, uint32_t speed_rpm);
 
 /**
- * @brief Move motor to absolute position (non-blocking)
- * 
- * @param handle Motor handle
- * @param target_position Target position in steps
- * @param speed_rpm Speed in RPM
- * @return Same as stepper_move_steps()
+ * @brief Quay một góc (non-blocking)
  */
-esp_err_t stepper_move_to(stepper_handle_t handle, int32_t target_position, uint32_t speed_rpm);
+esp_err_t stepper_move_degrees_async(stepper_handle_t handle, float degrees, uint32_t speed_rpm);
 
 /**
- * @brief Run motor continuously at constant speed (non-blocking)
- * 
- * Motor will run indefinitely until stepper_stop() is called.
- * 
- * @param handle Motor handle
- * @param speed_rpm Speed in RPM (negative for reverse)
- * @return ESP_OK on success
+ * @brief Chờ motor hoàn thành (dùng sau async)
+ */
+esp_err_t stepper_wait_complete(stepper_handle_t handle, uint32_t timeout_ms);
+
+/**
+ * @brief Quay liên tục với tốc độ cho trước
  */
 esp_err_t stepper_run_continuous(stepper_handle_t handle, int32_t speed_rpm);
 
 /**
- * @brief Stop motor immediately
- * 
- * Stops PWM generation and motor movement.
- * 
- * @param handle Motor handle
- * @return ESP_OK on success
+ * @brief Dừng quay liên tục
  */
 esp_err_t stepper_stop(stepper_handle_t handle);
 
 /**
- * @brief Check if motor is currently running
- * 
- * @param handle Motor handle
- * @return true if motor is running, false otherwise
+ * @brief Kiểm tra motor có đang chạy không
  */
 bool stepper_is_running(stepper_handle_t handle);
 
 /**
- * @brief Get current motor position in steps
- * 
- * @param handle Motor handle
- * @return Current position in steps
+ * @brief Lấy vị trí hiện tại (số bước)
  */
 int32_t stepper_get_position(stepper_handle_t handle);
 
 /**
- * @brief Set current position (without moving motor)
- * 
- * Useful for homing: after reaching home switch, call this with position=0.
- * 
- * @param handle Motor handle
- * @param position New position value
- * @return ESP_OK on success
+ * @brief Reset vị trí về 0
  */
-esp_err_t stepper_set_position(stepper_handle_t handle, int32_t position);
-
-/**
- * @brief Get target position for current movement
- * 
- * @param handle Motor handle
- * @return Target position in steps (equals current position if idle)
- */
-int32_t stepper_get_target_position(stepper_handle_t handle);
-
-/**
- * @brief Get current motor operation mode
- * 
- * @param handle Motor handle
- * @return Current mode (IDLE, POSITION, or VELOCITY)
- */
-stepper_mode_t stepper_get_mode(stepper_handle_t handle);
-
-/**
- * @brief Wait for motor to complete current movement
- * 
- * Blocks until motor stops or timeout expires.
- * 
- * @param handle Motor handle
- * @param timeout_ms Maximum time to wait in milliseconds (0 = wait forever)
- * @return 
- *     - ESP_OK: Motor stopped
- *     - ESP_ERR_TIMEOUT: Timeout expired
- */
-esp_err_t stepper_wait_complete(stepper_handle_t handle, uint32_t timeout_ms);
+esp_err_t stepper_reset_position(stepper_handle_t handle);
 
 #ifdef __cplusplus
 }

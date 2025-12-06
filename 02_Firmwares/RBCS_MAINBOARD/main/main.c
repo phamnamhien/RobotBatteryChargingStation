@@ -7,17 +7,101 @@ static const char *TAG = "MAINBOARD";
 
 #define MAINBOARD_ADDRESS           1   // Địa chỉ của MAINBOARD khi là Slave
 
-
-
+// ============================================
+// Limit Switch Callback Functions
+// ============================================
+void limit_switch_1_callback(limit_switch_handle_t handle, 
+                             limit_switch_event_t event, 
+                             void *user_data)
+{
+    if (event == LIMIT_SWITCH_PRESSED) {
+        ESP_LOGI(TAG, "Limit Switch 1 PRESSED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_1_TRIGGERED, NULL);
+    } else {
+        ESP_LOGI(TAG, "Limit Switch 1 RELEASED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_1_RELEASED, NULL);
+    }
+}
+void limit_switch_2_callback(limit_switch_handle_t handle, 
+                             limit_switch_event_t event, 
+                             void *user_data)
+{
+    if (event == LIMIT_SWITCH_PRESSED) {
+        ESP_LOGI(TAG, "Limit Switch 2 PRESSED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_2_TRIGGERED, NULL);
+    } else {
+        ESP_LOGI(TAG, "Limit Switch 2 RELEASED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_2_RELEASED, NULL);
+    }
+}
+void limit_switch_3_callback(limit_switch_handle_t handle, 
+                             limit_switch_event_t event, 
+                             void *user_data)
+{
+    if (event == LIMIT_SWITCH_PRESSED) {
+        ESP_LOGI(TAG, "Limit Switch 3 PRESSED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_3_TRIGGERED, NULL);
+    } else {
+        ESP_LOGI(TAG, "Limit Switch 3 RELEASED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_3_RELEASED, NULL);
+    }
+}
+void limit_switch_4_callback(limit_switch_handle_t handle, 
+                             limit_switch_event_t event, 
+                             void *user_data)
+{
+    if (event == LIMIT_SWITCH_PRESSED) {
+        ESP_LOGI(TAG, "Limit Switch 4 PRESSED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_4_TRIGGERED, NULL);
+    } else {
+        ESP_LOGI(TAG, "Limit Switch 4 RELEASED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_4_RELEASED, NULL);
+    }
+}
+void limit_switch_5_callback(limit_switch_handle_t handle, 
+                             limit_switch_event_t event, 
+                             void *user_data)
+{
+    if (event == LIMIT_SWITCH_PRESSED) {
+        ESP_LOGI(TAG, "Limit Switch 5 PRESSED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_5_TRIGGERED, NULL);
+    } else {
+        ESP_LOGI(TAG, "Limit Switch 5 RELEASED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_5_RELEASED, NULL);
+    }
+}
+void limit_switch_6_callback(limit_switch_handle_t handle, 
+                             limit_switch_event_t event, 
+                             void *user_data)
+{
+    if (event == LIMIT_SWITCH_PRESSED) {
+        ESP_LOGI(TAG, "Limit Switch 6 PRESSED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_6_TRIGGERED, NULL);
+    } else {
+        ESP_LOGI(TAG, "Limit Switch 6 RELEASED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_6_RELEASED, NULL);
+    }
+}
+void limit_switch_7_callback(limit_switch_handle_t handle, 
+                             limit_switch_event_t event, 
+                             void *user_data)
+{
+    if (event == LIMIT_SWITCH_PRESSED) {
+        ESP_LOGI(TAG, "Limit Switch 7 PRESSED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_7_TRIGGERED, NULL);
+    } else {
+        ESP_LOGI(TAG, "Limit Switch 7 RELEASED");
+        HSM_Run((HSM *)&mainboard, HSME_LIMIT_SWITCH_7_RELEASED, NULL);
+    }
+}
 // ============================================
 // Motor Callback Functions
 // ============================================
 void motor1_complete_cb(stepper_handle_t handle, void *user_data)
 {
-    HSM *This = (HSM *)user_data;
     uint32_t pos = stepper_get_position(handle);
     ESP_LOGI(TAG, "✅ Motor 1 COMPLETE! Position: %ld", pos);
-    HSM_Run(This, HSME_MOTOR_1_COMPLETE, NULL);
+    HSM_Run((HSM *)&mainboard, HSME_MOTOR_1_COMPLETE, NULL);
 }
 void motor2_complete_cb(stepper_handle_t handle, void *user_data)
 {
@@ -276,11 +360,95 @@ void app_main(void)
         return;
     }
     // ============================================
-    // STEP 1: Initialize HSM
+    // STEP 1: Initialize limit switch
     // ============================================
-    ESP_ERROR_CHECK(ticks_init());
+    gpio_install_isr_service(0);
 
-    app_state_hsm_init(&mainboard);
+    limit_switch_config_t ls_1_config = {
+        .gpio_pin = LIMIT_SWITCH_1_PIN,
+        .active_level = HIGH,             
+        .debounce_ms = 1,
+        .callback = limit_switch_1_callback,
+        .user_data = NULL
+    };
+    limit_switch_config_t ls_2_config = {
+        .gpio_pin = LIMIT_SWITCH_2_PIN,
+        .active_level = HIGH,              
+        .debounce_ms = 1,
+        .callback = limit_switch_2_callback,
+        .user_data = NULL
+    };
+        limit_switch_config_t ls_3_config = {
+        .gpio_pin = LIMIT_SWITCH_3_PIN,
+        .active_level = HIGH,             
+        .debounce_ms = 1,
+        .callback = limit_switch_3_callback,
+        .user_data = NULL
+    };
+        limit_switch_config_t ls_4_config = {
+        .gpio_pin = LIMIT_SWITCH_4_PIN,
+        .active_level = HIGH,              
+        .debounce_ms = 1,
+        .callback = limit_switch_4_callback,
+        .user_data = NULL
+    };
+        limit_switch_config_t ls_5_config = {
+        .gpio_pin = LIMIT_SWITCH_5_PIN,
+        .active_level = HIGH,              
+        .debounce_ms = 1,
+        .callback = limit_switch_5_callback,
+        .user_data = NULL
+    };
+        limit_switch_config_t ls_6_config = {
+        .gpio_pin = LIMIT_SWITCH_6_PIN,
+        .active_level = HIGH,             
+        .debounce_ms = 1,
+        .callback = limit_switch_6_callback,
+        .user_data = NULL
+    };
+        limit_switch_config_t ls_7_config = {
+        .gpio_pin = LIMIT_SWITCH_7_PIN,
+        .active_level = HIGH,              
+        .debounce_ms = 1,
+        .callback = limit_switch_7_callback,
+        .user_data = NULL
+    };
+    ret = limit_switch_init(&ls_1_config, &mainboard.limit_switch[IDX_LIMIT_SWITCH_1]);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init limit switch 1");
+        return;
+    }
+    // ret = limit_switch_init(&ls_2_config, &mainboard.limit_switch[IDX_LIMIT_SWITCH_2]);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to init limit switch 2");
+    //     return;
+    // }
+    // ret = limit_switch_init(&ls_3_config, &mainboard.limit_switch[IDX_LIMIT_SWITCH_3]);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to init limit switch 3");
+    //     return;
+    // }
+    // ret = limit_switch_init(&ls_4_config, &mainboard.limit_switch[IDX_LIMIT_SWITCH_4]);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to init limit switch 4");
+    //     return;
+    // }
+    // ret = limit_switch_init(&ls_5_config, &mainboard.limit_switch[IDX_LIMIT_SWITCH_5]);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to init limit switch 5");
+    //     return;
+    // }
+    // ret = limit_switch_init(&ls_6_config, &mainboard.limit_switch[IDX_LIMIT_SWITCH_6]);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to init limit switch 6");
+    //     return;
+    // }
+    // ret = limit_switch_init(&ls_7_config, &mainboard.limit_switch[IDX_LIMIT_SWITCH_7]);
+    // if (ret != ESP_OK) {
+    //     ESP_LOGE(TAG, "Failed to init limit switch 7");
+    //     return;
+    // }
+
     // ============================================
     // STEP 2: Initialize stepper motors
     // ============================================
@@ -289,35 +457,36 @@ void app_main(void)
         .pulse_pin = MOTOR_PWM_1_PIN,
         .dir_pin = MOTOR_DIR_1_PIN,
         .enable_pin = -1,
-        .steps_per_revolution = MOTOR_1_STEPS_PER_REVOLUTION,
-        .microstep = STEPPER_MICROSTEP_8,
-        .max_speed_hz = MOTOR_1_MAX_SPEED_HZ,      
-        .accel_steps = 50,          // Toc do tang dan sau 50 buoc dau
+        .steps_per_revolution = 200,
+        .microstep = MICROSTEP_16,
+        .max_speed_rpm = 600,
+        .accel_steps = 5000,  // Tăng/giảm tốc trong x bước
         .complete_cb = motor1_complete_cb,
-        .user_data = &mainboard,
+        .user_data = &mainboard
     };
     stepper_config_t motor2_config = {
         .pulse_pin = MOTOR_PWM_2_PIN,
         .dir_pin = MOTOR_DIR_2_PIN,
         .enable_pin = -1,
-        .steps_per_revolution = MOTOR_2_STEPS_PER_REVOLUTION,
-        .microstep = STEPPER_MICROSTEP_8,
-        .max_speed_hz = MOTOR_2_MAX_SPEED_HZ,      
-        .accel_steps = 50,          // Toc do tang dan sau 50 buoc dau
+        .steps_per_revolution = 200,
+        .microstep = MICROSTEP_16,
+        .max_speed_rpm = 300,
+        .accel_steps = 500,  // Tăng/giảm tốc trong x bước
         .complete_cb = motor2_complete_cb,
-        .user_data = &mainboard,
+        .user_data = &mainboard
     };
     stepper_config_t motor3_config = {
         .pulse_pin = MOTOR_PWM_3_PIN,
         .dir_pin = MOTOR_DIR_3_PIN,
         .enable_pin = -1,
-        .steps_per_revolution = MOTOR_3_STEPS_PER_REVOLUTION,
-        .microstep = STEPPER_MICROSTEP_8,
-        .max_speed_hz = MOTOR_3_MAX_SPEED_HZ,      
-        .accel_steps = 50,          // Toc do tang dan sau 50 buoc dau
+        .steps_per_revolution = 200,
+        .microstep = MICROSTEP_16,
+        .max_speed_rpm = 300,
+        .accel_steps = 500,  // Tăng/giảm tốc trong x bước
         .complete_cb = motor3_complete_cb,
-        .user_data = &mainboard,
+        .user_data = &mainboard
     };
+
     ret = stepper_init(&motor1_config, &mainboard.motor[IDX_MOTOR1]);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to init motor 1");
@@ -328,12 +497,17 @@ void app_main(void)
         ESP_LOGE(TAG, "Failed to init motor 2");
         return;
     }
-    ret = stepper_init(&motor3_config, &mainboard.motor[IDX_MOTOR2]);
+    ret = stepper_init(&motor3_config, &mainboard.motor[IDX_MOTOR3]);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to init motor 3");
         return;
     }
+    // ============================================
+    // STEP 2: Initialize HSM
+    // ============================================
+    ESP_ERROR_CHECK(ticks_init());
 
+    app_state_hsm_init(&mainboard);
     // ============================================
     // STEP3: Initialize Modbus
     // ============================================

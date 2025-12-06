@@ -21,6 +21,7 @@
 #include "esp_ticks.h"
 #include "hsm.h"
 #include "stepper_tb6600.h"
+#include "limit_switch.h"
 
 
 #define TOTAL_SLOTS		     	5
@@ -125,7 +126,16 @@ typedef struct {
     uint16_t fault_status;          // 1009
 } G_Station_Info_t;
 
-
+typedef enum {
+    IDX_LIMIT_SWITCH_1,
+    IDX_LIMIT_SWITCH_2,
+    IDX_LIMIT_SWITCH_3,
+    IDX_LIMIT_SWITCH_4,
+    IDX_LIMIT_SWITCH_5,
+    IDX_LIMIT_SWITCH_6,
+    IDX_LIMIT_SWITCH_7,
+    LIMIT_SWITCH_TOTAL,
+} LimitSwitchName_t;     
 typedef enum {
     IDX_MOTOR1,
     IDX_MOTOR2,
@@ -139,17 +149,26 @@ typedef enum {
     HSME_MOTOR_1_COMPLETE,
     HSME_MOTOR_2_COMPLETE,
     HSME_MOTOR_3_COMPLETE,
-    HSME_LIMIT_SWITCH_1_TRIGGERED,
+
+
+    HSME_LIMIT_SWITCH_1_TRIGGERED,      // For Motor 1 
     HSME_LIMIT_SWITCH_1_RELEASED,
     HSME_LIMIT_SWITCH_2_TRIGGERED,
     HSME_LIMIT_SWITCH_2_RELEASED,
-    HSME_LIMIT_SWITCH_3_TRIGGERED,
+    HSME_LIMIT_SWITCH_3_TRIGGERED,      // For Motor 2 
     HSME_LIMIT_SWITCH_3_RELEASED,
+    HSME_LIMIT_SWITCH_4_TRIGGERED,
+    HSME_LIMIT_SWITCH_4_RELEASED,
+    HSME_LIMIT_SWITCH_5_TRIGGERED,      // For Motor 3 
+    HSME_LIMIT_SWITCH_5_RELEASED,
+    HSME_LIMIT_SWITCH_6_TRIGGERED,
+    HSME_LIMIT_SWITCH_6_RELEASED,
+    HSME_LIMIT_SWITCH_7_TRIGGERED,      // For Robot Detected
+    HSME_LIMIT_SWITCH_7_RELEASED,       
+
 
 	HSME_LOADING_DONE,
-	HSME_SET_TO_ZERO_POSTION,
 
-    
 	HSME_BLINK_1S_TIMER,
 } HSMEvent_t;
 
@@ -184,6 +203,7 @@ typedef struct {
 	G_System_t g_system;
 	G_Station_Info_t g_station_info;
 
+    limit_switch_handle_t limit_switch[LIMIT_SWITCH_TOTAL];
     stepper_handle_t motor[MOTOR_TOTAL];
 } DeviceHSM_t;
 
